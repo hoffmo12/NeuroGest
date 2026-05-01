@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import '../models/aluno.dart';
 import '../widgets/neuro_widgets.dart';
+import '../services/auth_service.dart';
 import 'alunos_screen.dart';
+import 'login_screen.dart';
 
 class DashboardScreen extends StatelessWidget {
   final List<Aluno> alunos;
@@ -17,6 +19,22 @@ class DashboardScreen extends StatelessWidget {
       MaterialPageRoute(
         builder: (_) => AlunosScreen(alunos: alunos),
       ),
+    );
+  }
+
+  Future<void> sair(BuildContext context) async {
+    // Limpa o token e dados do usuário salvos localmente
+    await AuthService.logout();
+
+    if (!context.mounted) return;
+
+    // Volta para o login e remove todas as telas anteriores da pilha
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(
+        builder: (_) => LoginScreen(alunos: alunos),
+      ),
+      (_) => false,
     );
   }
 
@@ -45,9 +63,7 @@ class DashboardScreen extends StatelessWidget {
                             width: 80,
                             height: 34,
                             fontSize: 11,
-                            onPressed: () {
-                              Navigator.pop(context);
-                            },
+                            onPressed: () => sair(context),
                           ),
                         ),
                         const SizedBox(height: 20),

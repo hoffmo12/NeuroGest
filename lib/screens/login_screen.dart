@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'dashboard_screen.dart';
 import '../models/aluno.dart';
 import '../widgets/neuro_widgets.dart';
+import '../services/auth_service.dart';
 
 class LoginScreen extends StatefulWidget {
   final List<Aluno> alunos;
@@ -19,6 +20,8 @@ class _LoginScreenState extends State<LoginScreen> {
   final emailController = TextEditingController();
   final senhaController = TextEditingController();
 
+  bool _carregando = false;
+
   @override
   void dispose() {
     emailController.dispose();
@@ -26,11 +29,42 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  void entrar() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => DashboardScreen(alunos: widget.alunos),
+  Future<void> entrar() async {
+    final email = emailController.text.trim();
+    final senha = senhaController.text.trim();
+
+    // Validação básica antes de chamar a API
+    if (email.isEmpty || senha.isEmpty) {
+      _mostrarErro('Preencha o e-mail e a senha.');
+      return;
+    }
+
+    setState(() => _carregando = true);
+
+    final resultado = await AuthService.login(email, senha);
+
+    setState(() => _carregando = false);
+
+    if (!mounted) return;
+
+    if (resultado.sucesso) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (_) => DashboardScreen(alunos: widget.alunos),
+        ),
+      );
+    } else {
+      _mostrarErro(resultado.mensagemErro ?? 'Erro desconhecido.');
+    }
+  }
+
+  void _mostrarErro(String mensagem) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(mensagem),
+        backgroundColor: Colors.red.shade700,
+        behavior: SnackBarBehavior.floating,
       ),
     );
   }
@@ -79,12 +113,18 @@ class _LoginScreenState extends State<LoginScreen> {
                           obscureText: true,
                         ),
                         const SizedBox(height: 24),
-                        NeuroPillButton(
-                          text: 'ENTRAR',
-                          width: 120,
-                          height: 42,
-                          onPressed: entrar,
-                        ),
+
+                        // Botão mostra loading enquanto aguarda a API
+                        _carregando
+                            ? const CircularProgressIndicator(
+                                color: Colors.black,
+                              )
+                            : NeuroPillButton(
+                                text: 'ENTRAR',
+                                width: 120,
+                                height: 42,
+                                onPressed: entrar,
+                              ),
                       ],
                     ),
                   ),
