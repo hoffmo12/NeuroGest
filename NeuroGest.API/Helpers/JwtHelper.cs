@@ -15,7 +15,6 @@ public class JwtHelper
         _config = config;
     }
 
-    /// <summary>Gera um JWT assinado para o usuário informado.</summary>
     public (string token, DateTime expiraEm) GerarToken(Usuario usuario)
     {
         var chave = _config["Jwt:Chave"]
@@ -26,10 +25,11 @@ public class JwtHelper
 
         var claims = new[]
         {
-            new Claim(JwtRegisteredClaimNames.Sub, usuario.Id.ToString()),
+            new Claim(JwtRegisteredClaimNames.Sub,   usuario.Id.ToString()),
             new Claim(JwtRegisteredClaimNames.Email, usuario.Email),
-            new Claim("nome", usuario.Nome),
-            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+            new Claim("nome",   usuario.Nome),
+            new Claim("perfil", usuario.Perfil),   // <-- perfil no token
+            new Claim(JwtRegisteredClaimNames.Jti,  Guid.NewGuid().ToString()),
         };
 
         var credenciais = new SigningCredentials(
@@ -37,10 +37,10 @@ public class JwtHelper
             SecurityAlgorithms.HmacSha256);
 
         var token = new JwtSecurityToken(
-            issuer: _config["Jwt:Issuer"],
-            audience: _config["Jwt:Audience"],
-            claims: claims,
-            expires: expiraEm,
+            issuer:            _config["Jwt:Issuer"],
+            audience:          _config["Jwt:Audience"],
+            claims:            claims,
+            expires:           expiraEm,
             signingCredentials: credenciais);
 
         return (new JwtSecurityTokenHandler().WriteToken(token), expiraEm);

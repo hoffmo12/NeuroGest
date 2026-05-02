@@ -3,8 +3,8 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace NeuroGest.API.Models;
 
-[Table("usuarios")]
-public class Usuario
+[Table("funcionarios")]
+public class Funcionario
 {
     [Key]
     [Column("id")]
@@ -25,19 +25,20 @@ public class Usuario
     public string SenhaHash { get; set; } = string.Empty;
 
     // Ex: "Terapeuta", "Recepcionista", "Coordenador"
+    [Required]
     [MaxLength(100)]
     [Column("funcao")]
-    public string? Funcao { get; set; }
-
-    [MaxLength(20)]
-    [Column("telefone")]
-    public string? Telefone { get; set; }
+    public string Funcao { get; set; } = string.Empty;
 
     // "admin" | "gerente" | "usuario"
     [Required]
     [MaxLength(20)]
     [Column("perfil")]
     public string Perfil { get; set; } = "usuario";
+
+    [MaxLength(20)]
+    [Column("telefone")]
+    public string? Telefone { get; set; }
 
     [Column("ativo")]
     public bool Ativo { get; set; } = true;

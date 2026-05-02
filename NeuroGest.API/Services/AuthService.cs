@@ -20,18 +20,22 @@ public class AuthService : IAuthService
     // ─── Cadastro ─────────────────────────────────────────
     public async Task<AuthResponseDto?> CadastrarAsync(CadastroDto dto)
     {
-        // Verifica se o e-mail já está em uso
         bool emailExistente = await _db.Usuarios
             .AnyAsync(u => u.Email == dto.Email.ToLower());
 
         if (emailExistente)
-            return null; // Retorna null → controller devolve 409 Conflict
+            return null;
+
+        // Garante que só perfis válidos sejam aceitos
+        var perfisValidos = new[] { "admin", "gerente", "usuario" };
+        var perfil = perfisValidos.Contains(dto.Perfil) ? dto.Perfil : "usuario";
 
         var usuario = new Usuario
         {
             Nome      = dto.Nome.Trim(),
             Email     = dto.Email.Trim().ToLower(),
             SenhaHash = BCrypt.Net.BCrypt.HashPassword(dto.Senha),
+            Perfil    = perfil,
         };
 
         _db.Usuarios.Add(usuario);
@@ -49,9 +53,7 @@ public class AuthService : IAuthService
         if (usuario is null)
             return null;
 
-        bool senhaCorreta = BCrypt.Net.BCrypt.Verify(dto.Senha, usuario.SenhaHash);
-
-        if (!senhaCorreta)
+        if (!BCrypt.Net.BCrypt.Verify(dto.Senha, usuario.SenhaHash))
             return null;
 
         return GerarResposta(usuario);
@@ -64,10 +66,11 @@ public class AuthService : IAuthService
 
         return new AuthResponseDto
         {
-            Token     = token,
-            Nome      = usuario.Nome,
-            Email     = usuario.Email,
-            ExpiraEm  = expiraEm,
+            Token    = token,
+            Nome     = usuario.Nome,
+            Email    = usuario.Email,
+            Perfil   = usuario.Perfil,
+            ExpiraEm = expiraEm,
         };
     }
 }

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'models/aluno.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'screens/login_screen.dart';
 
 void main() {
@@ -11,29 +11,6 @@ class NeuroGestApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final alunosIniciais = [
-      Aluno(
-        nome: 'Aluno Y',
-        idade: '10',
-        dataNascimento: '12/04/2015',
-      ),
-      Aluno(
-        nome: 'Maria Souza',
-        idade: '12',
-        dataNascimento: '08/01/2013',
-      ),
-      Aluno(
-        nome: 'João Pedro',
-        idade: '9',
-        dataNascimento: '21/09/2016',
-      ),
-      Aluno(
-        nome: 'Ana Clara',
-        idade: '11',
-        dataNascimento: '30/06/2014',
-      ),
-    ];
-
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'NeuroGest',
@@ -41,7 +18,18 @@ class NeuroGestApp extends StatelessWidget {
         useMaterial3: true,
         fontFamily: 'Arial',
       ),
-      home: LoginScreen(alunos: alunosIniciais),
+
+      // ── Localização PT-BR (necessário para o seletor de data) ──
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [
+        Locale('pt', 'BR'),
+      ],
+
+      home: const LoginScreen(),
     );
   }
 }

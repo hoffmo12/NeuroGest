@@ -9,7 +9,7 @@ using NeuroGest.API.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// ─── Banco de dados (MySQL via Pomelo) ────────────────────
+// ─── Banco de dados ───────────────────────────────────────
 var connectionString = builder.Configuration.GetConnectionString("Default")
     ?? throw new InvalidOperationException("Connection string 'Default' não encontrada.");
 
@@ -39,7 +39,7 @@ builder.Services
 
 builder.Services.AddAuthorization();
 
-// ─── CORS (permite chamadas do Flutter) ───────────────────
+// ─── CORS ─────────────────────────────────────────────────
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("FlutterPolicy", policy =>
@@ -48,22 +48,18 @@ builder.Services.AddCors(options =>
               .AllowAnyMethod());
 });
 
-// ─── Serviços da aplicação ────────────────────────────────
+// ─── Serviços ─────────────────────────────────────────────
 builder.Services.AddScoped<JwtHelper>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IFuncionarioService, FuncionarioService>();
+builder.Services.AddScoped<IAlunoService, AlunoService>();
 
 // ─── Controllers + Swagger ────────────────────────────────
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
-    c.SwaggerDoc("v1", new OpenApiInfo
-    {
-        Title   = "NeuroGest API",
-        Version = "v1",
-    });
-
-    // Adiciona suporte a Bearer Token no Swagger
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "NeuroGest API", Version = "v1" });
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Name         = "Authorization",
@@ -71,19 +67,14 @@ builder.Services.AddSwaggerGen(c =>
         Scheme       = "bearer",
         BearerFormat = "JWT",
         In           = ParameterLocation.Header,
-        Description  = "Insira o token JWT assim: Bearer {seu_token}",
+        Description  = "Insira: Bearer {seu_token}",
     });
-
     c.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
         {
             new OpenApiSecurityScheme
             {
-                Reference = new OpenApiReference
-                {
-                    Type = ReferenceType.SecurityScheme,
-                    Id   = "Bearer"
-                }
+                Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "Bearer" }
             },
             Array.Empty<string>()
         }
@@ -93,7 +84,6 @@ builder.Services.AddSwaggerGen(c =>
 // ─── Build ────────────────────────────────────────────────
 var app = builder.Build();
 
-// Aplica migrations automaticamente ao iniciar
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
