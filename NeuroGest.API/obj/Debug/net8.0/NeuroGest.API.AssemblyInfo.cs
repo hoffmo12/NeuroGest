@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("NeuroGest.API")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+202e005a6ab9ff8bfdd6fb045911f94e65dbd0d0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+fa8a82cd43f6ef4ec705abe63186c201bb7adac9")]
 [assembly: System.Reflection.AssemblyProductAttribute("NeuroGest.API")]
 [assembly: System.Reflection.AssemblyTitleAttribute("NeuroGest.API")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
