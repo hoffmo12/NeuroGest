@@ -4,7 +4,7 @@ import '../models/funcionario.dart';
 import '../services/funcionario_service.dart';
 import '../widgets/neuro_widgets.dart';
 
-// ─── Máscara de telefone ──────────────────────────────────
+
 class _TelefoneMask extends TextInputFormatter {
   @override
   TextEditingValue formatEditUpdate(
@@ -32,7 +32,7 @@ class _TelefoneMask extends TextInputFormatter {
   }
 }
 
-// ─── Campo com validação visual ───────────────────────────
+
 class _NeuroValidatedField extends StatelessWidget {
   final String label;
   final String hint;
@@ -116,7 +116,7 @@ class _NeuroValidatedField extends StatelessWidget {
   }
 }
 
-// ─── Tela principal ───────────────────────────────────────
+
 class FuncionarioFormScreen extends StatefulWidget {
   final Funcionario? funcionario;
 
@@ -139,7 +139,7 @@ class _FuncionarioFormScreenState extends State<FuncionarioFormScreen> {
   bool _verSenha    = false;
   bool _verConfirmar = false;
 
-  // ─── Erros por campo ──────────────────────────────────
+ 
   String? _erroNome;
   String? _erroEmail;
   String? _erroSenha;
@@ -192,7 +192,7 @@ class _FuncionarioFormScreenState extends State<FuncionarioFormScreen> {
     super.dispose();
   }
 
-  // ─── Validações ───────────────────────────────────────
+ 
   bool _validar() {
     bool valido = true;
 

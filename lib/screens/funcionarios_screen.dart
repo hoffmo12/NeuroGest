@@ -87,7 +87,6 @@ class _FuncionariosScreenState extends State<FuncionariosScreen> {
     }
   }
 
-  // ─── Badge de perfil ──────────────────────────────────
   Widget _badgePerfil(String perfil) {
     final map = {
       'admin':   (Colors.green, 'ADMIN'),
@@ -276,7 +275,6 @@ class _FuncionariosScreenState extends State<FuncionariosScreen> {
   }
 }
 
-// ─── Botão de ícone circular ──────────────────────────────
 class _IconBtn extends StatelessWidget {
   final IconData icon;
   final Color color;
