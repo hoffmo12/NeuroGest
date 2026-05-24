@@ -68,12 +68,10 @@ class _Campo extends StatelessWidget {
     required this.hint,
     required this.controller,
     this.errorText,
-    this.obscureText = false,
     this.keyboardType,
     this.inputFormatters,
     this.maxLines = 1,
     this.maxLength,
-    this.suffixIcon,
   });
 
   @override
