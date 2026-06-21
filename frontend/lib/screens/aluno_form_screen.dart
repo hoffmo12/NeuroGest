@@ -4,45 +4,22 @@ import '../models/aluno.dart';
 import '../services/aluno_service.dart';
 import '../widgets/neuro_widgets.dart';
 
-// ─── Máscara CPF: 000.000.000-00 ─────────────────────────
-class _CpfMask extends TextInputFormatter {
-  @override
-  TextEditingValue formatEditUpdate(
-    TextEditingValue old,
-    TextEditingValue novo,
-  ) {
-    final digits = novo.text.replaceAll(RegExp(r'\D'), '');
-    final buf = StringBuffer();
-    for (int i = 0; i < digits.length && i < 11; i++) {
-      if (i == 3 || i == 6) buf.write('.');
-      if (i == 9) buf.write('-');
-      buf.write(digits[i]);
-    }
-    final result = buf.toString();
-    return TextEditingValue(
-      text: result,
-      selection: TextSelection.collapsed(offset: result.length),
-    );
-  }
-}
-
-// ─── Máscara Telefone ─────────────────────────────────────
 class _TelefoneMask extends TextInputFormatter {
   @override
   TextEditingValue formatEditUpdate(
-    TextEditingValue old,
-    TextEditingValue novo,
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
   ) {
-    final digits = novo.text.replaceAll(RegExp(r'\D'), '');
-    final buf = StringBuffer();
+    final digits = newValue.text.replaceAll(RegExp(r'\D'), '');
+    final buffer = StringBuffer();
     for (int i = 0; i < digits.length && i < 11; i++) {
-      if (i == 0) buf.write('(');
-      if (i == 2) buf.write(') ');
-      if (digits.length == 11 && i == 7) buf.write('-');
-      if (digits.length <= 10 && i == 6) buf.write('-');
-      buf.write(digits[i]);
+      if (i == 0) buffer.write('(');
+      if (i == 2) buffer.write(') ');
+      if (digits.length == 11 && i == 7) buffer.write('-');
+      if (digits.length <= 10 && i == 6) buffer.write('-');
+      buffer.write(digits[i]);
     }
-    final result = buf.toString();
+    final result = buffer.toString();
     return TextEditingValue(
       text: result,
       selection: TextSelection.collapsed(offset: result.length),
@@ -50,96 +27,72 @@ class _TelefoneMask extends TextInputFormatter {
   }
 }
 
-// ─── Campo com erro visual ────────────────────────────────
-class _Campo extends StatelessWidget {
+class _CpfMask extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    final digits = newValue.text.replaceAll(RegExp(r'\D'), '');
+    final buffer = StringBuffer();
+    for (int i = 0; i < digits.length && i < 11; i++) {
+      if (i == 3 || i == 6) buffer.write('.');
+      if (i == 9) buffer.write('-');
+      buffer.write(digits[i]);
+    }
+    final result = buffer.toString();
+    return TextEditingValue(
+      text: result,
+      selection: TextSelection.collapsed(offset: result.length),
+    );
+  }
+}
+
+class _ValidatedField extends StatelessWidget {
   final String label;
   final String hint;
   final TextEditingController controller;
-  final String? errorText;
   final bool obscureText;
-  final TextInputType? keyboardType;
-  final List<TextInputFormatter>? inputFormatters;
-  final int? maxLines;
-  final int? maxLength;
   final Widget? suffixIcon;
+  final List<TextInputFormatter>? inputFormatters;
+  final TextInputType? keyboardType;
+  final String? errorText;
 
-  const _Campo({
+  const _ValidatedField({
     required this.label,
     required this.hint,
     required this.controller,
-    this.errorText,
-    this.keyboardType,
+    this.obscureText = false,
+    this.suffixIcon,
     this.inputFormatters,
-    this.maxLines = 1,
-    this.maxLength,
+    this.keyboardType,
+    this.errorText,
   });
 
   @override
   Widget build(BuildContext context) {
-    final hasError = errorText != null && errorText!.isNotEmpty;
-    final isMultiline = maxLines != null && maxLines! > 1;
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Padding(
-          padding: const EdgeInsets.only(left: 6, bottom: 6),
-          child: Text(
-            label,
-            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
-          ),
-        ),
-        TextField(
+        NeuroTextField(
+          label: label,
+          hint: hint,
           controller: controller,
           obscureText: obscureText,
-          keyboardType: keyboardType,
+          suffixIcon: suffixIcon,
           inputFormatters: inputFormatters,
-          maxLines: maxLines,
-          maxLength: maxLength,
-          decoration: InputDecoration(
-            hintText: hint,
-            filled: true,
-            fillColor: hasError ? Colors.red.shade50 : NeuroColors.panel,
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 18,
-              vertical: 14,
-            ),
-            suffixIcon: suffixIcon,
-            counterText: maxLength != null ? null : '',
-            enabledBorder: OutlineInputBorder(
-              borderSide: BorderSide(
-                color: hasError ? Colors.red.shade700 : Colors.black,
-                width: 3,
-              ),
-              borderRadius: BorderRadius.circular(isMultiline ? 16 : 999),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderSide: BorderSide(
-                color: hasError ? Colors.red.shade700 : Colors.black,
-                width: 3,
-              ),
-              borderRadius: BorderRadius.circular(isMultiline ? 16 : 999),
-            ),
-          ),
+          keyboardType: keyboardType,
         ),
-        if (hasError)
+        if (errorText != null)
           Padding(
-            padding: const EdgeInsets.only(left: 14, top: 5),
-            child: Row(
-              children: [
-                Icon(Icons.error_outline, size: 13, color: Colors.red.shade700),
-                const SizedBox(width: 4),
-                Flexible(
-                  child: Text(
-                    errorText!,
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: Colors.red.shade700,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              ],
+            padding: const EdgeInsets.only(top: 4, left: 4),
+            child: Text(
+              errorText!,
+              style: const TextStyle(
+                color: Colors.red,
+                fontSize: 11,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
       ],
@@ -147,10 +100,8 @@ class _Campo extends StatelessWidget {
   }
 }
 
-// ─── Tela principal ───────────────────────────────────────
 class AlunoFormScreen extends StatefulWidget {
   final Aluno? aluno;
-
   const AlunoFormScreen({super.key, this.aluno});
 
   @override
@@ -158,69 +109,63 @@ class AlunoFormScreen extends StatefulWidget {
 }
 
 class _AlunoFormScreenState extends State<AlunoFormScreen> {
-  final _nomeController = TextEditingController();
-  final _dataNascController = TextEditingController();
-  final _nomePaiController = TextEditingController();
-  final _nomeMaeController = TextEditingController();
-  final _cpfPaiController = TextEditingController();
-  final _cpfMaeController = TextEditingController();
-  final _telefoneController = TextEditingController();
-  final _obsController = TextEditingController();
+  final _nomeCtrl      = TextEditingController();
+  final _dataNascCtrl  = TextEditingController();
+  final _municipioCtrl = TextEditingController();
+  final _sexoCtrl      = TextEditingController();
+  final _estadoCtrl    = TextEditingController();
+  final _nomePaiCtrl   = TextEditingController();
+  final _nomeMaeCtrl   = TextEditingController();
+  final _cpfCtrl       = TextEditingController();
+  final _telCtrl       = TextEditingController();
+  final _obsCtrl       = TextEditingController();
 
-  String? _erroNome;
-  String? _erroData;
-  String? _erroCpfPai;
-  String? _erroCpfMae;
-  String? _erroTelefone;
+  String? _errNome;
+  String? _errData;
+  String? _errCpf;
+  String? _errTelefone;
 
   DateTime? _dataSelecionada;
   int _idadeCalculada = 0;
   bool _carregando = false;
 
-  bool get _editando => widget.aluno != null;
+  bool get _isEdicao => widget.aluno != null;
 
   @override
   void initState() {
     super.initState();
-    if (_editando) {
+    if (_isEdicao) {
       final a = widget.aluno!;
-      _nomeController.text = a.nome;
-      _dataNascController.text = a.dataNascimentoFormatada;
-      _nomePaiController.text = a.nomePai ?? '';
-      _nomeMaeController.text = a.nomeMae ?? '';
-      _cpfPaiController.text = a.cpfPai ?? '';
-      _cpfMaeController.text = a.cpfMae ?? '';
-      _telefoneController.text = a.telefoneResponsavel ?? '';
-      _obsController.text = a.observacoes ?? '';
-      _dataSelecionada = a.dataNascimento;
-      _idadeCalculada = a.idade;
+      _nomeCtrl.text      = a.nome;
+      _dataNascCtrl.text  = a.dataNascimentoFormatada;
+      _municipioCtrl.text = a.municipio ?? '';
+      _sexoCtrl.text      = a.sexo ?? '';
+      _estadoCtrl.text    = a.estado ?? '';
+      _nomePaiCtrl.text   = a.nomePai ?? '';
+      _nomeMaeCtrl.text   = a.nomeMae ?? '';
+      _cpfCtrl.text       = a.cpf ?? '';
+      _telCtrl.text       = a.telefoneResponsavel ?? '';
+      _obsCtrl.text       = a.observacoes ?? '';
+      _dataSelecionada    = a.dataNascimento;
+      _idadeCalculada     = a.idade;
     }
-
-    _nomeController.addListener(() => _limpar(() => _erroNome = null));
-    _dataNascController.addListener(() => _limpar(() => _erroData = null));
-    _cpfPaiController.addListener(() => _limpar(() => _erroCpfPai = null));
-    _cpfMaeController.addListener(() => _limpar(() => _erroCpfMae = null));
-    _telefoneController.addListener(() => _limpar(() => _erroTelefone = null));
-  }
-
-  void _limpar(VoidCallback fn) {
-    if (mounted) setState(fn);
   }
 
   @override
   void dispose() {
-    _nomeController.dispose();
-    _dataNascController.dispose();
-    _nomePaiController.dispose();
-    _nomeMaeController.dispose();
-    _cpfPaiController.dispose();
-    _cpfMaeController.dispose();
-    _telefoneController.dispose();
-    _obsController.dispose();
+    _nomeCtrl.dispose();
+    _dataNascCtrl.dispose();
+    _municipioCtrl.dispose();
+    _sexoCtrl.dispose();
+    _estadoCtrl.dispose();
+    _nomePaiCtrl.dispose();
+    _nomeMaeCtrl.dispose();
+    _cpfCtrl.dispose();
+    _telCtrl.dispose();
+    _obsCtrl.dispose();
     super.dispose();
   }
 
-  // ─── Seletor de data ──────────────────────────────────
   Future<void> _selecionarData() async {
     final picked = await showDatePicker(
       context: context,
@@ -236,10 +181,10 @@ class _AlunoFormScreenState extends State<AlunoFormScreen> {
     if (picked != null) {
       setState(() {
         _dataSelecionada = picked;
-        _dataNascController.text =
+        _dataNascCtrl.text =
             '${picked.day.toString().padLeft(2, '0')}/${picked.month.toString().padLeft(2, '0')}/${picked.year}';
         _idadeCalculada = _calcularIdade(picked);
-        _erroData = null;
+        _errData = null;
       });
     }
   }
@@ -254,136 +199,93 @@ class _AlunoFormScreenState extends State<AlunoFormScreen> {
     return idade;
   }
 
-  // ─── Validações ───────────────────────────────────────
   bool _validar() {
-    bool valido = true;
-
     setState(() {
-      // Nome
-      final nome = _nomeController.text.trim();
+      final nome = _nomeCtrl.text.trim();
       if (nome.isEmpty) {
-        _erroNome = 'O nome é obrigatório.';
-        valido = false;
+        _errNome = 'O nome é obrigatório.';
       } else if (nome.length < 3) {
-        _erroNome = 'O nome deve ter ao menos 3 caracteres.';
-        valido = false;
+        _errNome = 'O nome deve ter ao menos 3 caracteres.';
       } else {
-        _erroNome = null;
+        _errNome = null;
       }
 
-      // Data de nascimento
-      if (_dataSelecionada == null) {
-        _erroData = 'Selecione a data de nascimento.';
-        valido = false;
-      } else {
-        _erroData = null;
-      }
+      _errData = _dataSelecionada == null ? 'Selecione a data de nascimento.' : null;
 
-      // CPF pai (opcional, mas se preenchido valida)
-      final cpfPai = _cpfPaiController.text.replaceAll(RegExp(r'\D'), '');
-      if (cpfPai.isNotEmpty && cpfPai.length != 11) {
-        _erroCpfPai = 'CPF inválido. Digite os 11 dígitos.';
-        valido = false;
-      } else {
-        _erroCpfPai = null;
-      }
+      final cpf = _cpfCtrl.text.replaceAll(RegExp(r'\D'), '');
+      _errCpf = (cpf.isNotEmpty && cpf.length != 11) ? 'CPF inválido. Digite os 11 dígitos.' : null;
 
-      // CPF mãe (opcional, mas se preenchido valida)
-      final cpfMae = _cpfMaeController.text.replaceAll(RegExp(r'\D'), '');
-      if (cpfMae.isNotEmpty && cpfMae.length != 11) {
-        _erroCpfMae = 'CPF inválido. Digite os 11 dígitos.';
-        valido = false;
-      } else {
-        _erroCpfMae = null;
-      }
-
-      // Telefone (opcional, mas se preenchido valida)
-      final tel = _telefoneController.text.replaceAll(RegExp(r'\D'), '');
-      if (tel.isNotEmpty && (tel.length < 10 || tel.length > 11)) {
-        _erroTelefone =
-            'Formato inválido. Use (xx) xxxx-xxxx ou (xx) xxxxx-xxxx.';
-        valido = false;
-      } else {
-        _erroTelefone = null;
-      }
+      final tel = _telCtrl.text.replaceAll(RegExp(r'\D'), '');
+      _errTelefone = (tel.isNotEmpty && (tel.length < 10 || tel.length > 11))
+          ? 'Formato inválido. Use (xx) xxxxx-xxxx.'
+          : null;
     });
 
-    return valido;
+    return _errNome == null && _errData == null && _errCpf == null && _errTelefone == null;
   }
 
   Future<void> _salvar() async {
     if (!_validar()) return;
-
     setState(() => _carregando = true);
 
-    // Converte data para o formato da API: yyyy-MM-dd
     final dataApi =
         '${_dataSelecionada!.year}-${_dataSelecionada!.month.toString().padLeft(2, '0')}-${_dataSelecionada!.day.toString().padLeft(2, '0')}';
 
     String? erro;
 
-    if (_editando) {
+    final String? municipio = _municipioCtrl.text.trim().isEmpty ? null : _municipioCtrl.text.trim();
+    final String? sexo = _sexoCtrl.text.trim().isEmpty ? null : _sexoCtrl.text.trim();
+    final String? estado = _estadoCtrl.text.trim().isEmpty ? null : _estadoCtrl.text.trim();
+    final String? nomePai = _nomePaiCtrl.text.trim().isEmpty ? null : _nomePaiCtrl.text.trim();
+    final String? nomeMae = _nomeMaeCtrl.text.trim().isEmpty ? null : _nomeMaeCtrl.text.trim();
+    final String? cpf = _cpfCtrl.text.trim().isEmpty ? null : _cpfCtrl.text.trim();
+    final String? telefoneResponsavel = _telCtrl.text.trim().isEmpty ? null : _telCtrl.text.trim();
+    final String? observacoes = _obsCtrl.text.trim().isEmpty ? null : _obsCtrl.text.trim();
+
+    if (_isEdicao) {
       erro = await AlunoService.editar(
-        id: widget.aluno!.id,
-        nome: _nomeController.text.trim(),
-        dataNascimento: dataApi,
-        nomePai: _nomePaiController.text.trim().isEmpty
-            ? null
-            : _nomePaiController.text.trim(),
-        nomeMae: _nomeMaeController.text.trim().isEmpty
-            ? null
-            : _nomeMaeController.text.trim(),
-        cpfPai: _cpfPaiController.text.trim().isEmpty
-            ? null
-            : _cpfPaiController.text.trim(),
-        cpfMae: _cpfMaeController.text.trim().isEmpty
-            ? null
-            : _cpfMaeController.text.trim(),
-        telefoneResponsavel: _telefoneController.text.trim().isEmpty
-            ? null
-            : _telefoneController.text.trim(),
-        observacoes: _obsController.text.trim().isEmpty
-            ? null
-            : _obsController.text.trim(),
+        id:                  widget.aluno!.id,
+        nome:                _nomeCtrl.text.trim(),
+        dataNascimento:      dataApi,
+        municipio:           municipio,
+        sexo:                sexo,
+        estado:              estado,
+        nomePai:             nomePai,
+        nomeMae:             nomeMae,
+        cpf:                 cpf,
+        telefoneResponsavel: telefoneResponsavel,
+        observacoes:         observacoes,
       );
     } else {
       erro = await AlunoService.criar(
-        nome: _nomeController.text.trim(),
-        dataNascimento: dataApi,
-        nomePai: _nomePaiController.text.trim().isEmpty
-            ? null
-            : _nomePaiController.text.trim(),
-        nomeMae: _nomeMaeController.text.trim().isEmpty
-            ? null
-            : _nomeMaeController.text.trim(),
-        cpfPai: _cpfPaiController.text.trim().isEmpty
-            ? null
-            : _cpfPaiController.text.trim(),
-        cpfMae: _cpfMaeController.text.trim().isEmpty
-            ? null
-            : _cpfMaeController.text.trim(),
-        telefoneResponsavel: _telefoneController.text.trim().isEmpty
-            ? null
-            : _telefoneController.text.trim(),
-        observacoes: _obsController.text.trim().isEmpty
-            ? null
-            : _obsController.text.trim(),
+        nome:                _nomeCtrl.text.trim(),
+        dataNascimento:      dataApi,
+        municipio:           municipio,
+        sexo:                sexo,
+        estado:              estado,
+        nomePai:             nomePai,
+        nomeMae:             nomeMae,
+        cpf:                 cpf,
+        telefoneResponsavel: telefoneResponsavel,
+        observacoes:         observacoes,
       );
     }
 
     setState(() => _carregando = false);
     if (!mounted) return;
 
-    if (erro != null) {
+    if (erro == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(erro),
-          backgroundColor: Colors.red.shade700,
-          behavior: SnackBarBehavior.floating,
+        const SnackBar(
+          content: Text('Aluno salvo com sucesso!'),
+          backgroundColor: Colors.green,
         ),
       );
-    } else {
       Navigator.pop(context, true);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(erro), backgroundColor: Colors.red.shade700),
+      );
     }
   }
 
@@ -393,282 +295,207 @@ class _AlunoFormScreenState extends State<AlunoFormScreen> {
       backgroundColor: NeuroColors.background,
       body: SafeArea(
         child: Center(
-          child: SingleChildScrollView(
+          child: Padding(
             padding: const EdgeInsets.all(20),
-            child: Column(
-              children: [
-                NeuroHeaderTitle(
-                  title: _editando ? 'EDITAR ALUNO' : 'ADICIONAR ALUNO',
-                ),
-                const SizedBox(height: 20),
-                ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 560),
-                  child: NeuroPanel(
-                    padding: const EdgeInsets.fromLTRB(16, 10, 16, 24),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        NeuroTopBar(
-                          title: 'NEUROGEST',
-                          left: NeuroPillButton(
-                            text: 'VOLTAR',
-                            width: 95,
-                            height: 34,
-                            fontSize: 11,
-                            onPressed: () => Navigator.pop(context),
-                          ),
-                        ),
-                        const SizedBox(height: 20),
-
-                        // ── Nome ──
-                        _Campo(
-                          label: 'Nome completo:',
-                          hint: 'Nome do aluno',
-                          controller: _nomeController,
-                          errorText: _erroNome,
-                        ),
-                        const SizedBox(height: 14),
-
-                        // ── Data de nascimento + idade calculada ──
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Padding(
-                              padding: EdgeInsets.only(left: 6, bottom: 6),
-                              child: Text(
-                                'Data de nascimento:',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 700),
+              child: Column(
+                children: [
+                  NeuroHeaderTitle(title: _isEdicao ? 'EDITAR ALUNO' : 'ADICIONAR ALUNO'),
+                  const SizedBox(height: 18),
+                  Expanded(
+                    child: NeuroPanel(
+                      padding: const EdgeInsets.fromLTRB(14, 10, 14, 14),
+                      child: Column(
+                        children: [
+                          NeuroTopBar(
+                            title: 'NEUROGEST',
+                            left: NeuroPillButton(
+                              text: 'VOLTAR',
+                              width: 95, height: 34, fontSize: 11,
+                              onPressed: () => Navigator.pop(context),
                             ),
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: GestureDetector(
+                          ),
+                          const SizedBox(height: 20),
+                          Expanded(
+                            child: SingleChildScrollView(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  // ── Nome ──
+                                  _ValidatedField(
+                                    label: 'Nome completo:',
+                                    hint: 'Nome do aluno',
+                                    controller: _nomeCtrl,
+                                    errorText: _errNome,
+                                  ),
+                                  const SizedBox(height: 14),
+
+                                  // ── Data de Nascimento ──
+                                  GestureDetector(
                                     onTap: _selecionarData,
                                     child: AbsorbPointer(
-                                      child: TextField(
-                                        controller: _dataNascController,
-                                        decoration: InputDecoration(
-                                          hintText: 'Toque para selecionar',
-                                          filled: true,
-                                          fillColor: _erroData != null
-                                              ? Colors.red.shade50
-                                              : NeuroColors.panel,
-                                          contentPadding:
-                                              const EdgeInsets.symmetric(
-                                                horizontal: 18,
-                                                vertical: 14,
+                                      child: _ValidatedField(
+                                        label: 'Data de nascimento:',
+                                        hint: 'Toque para selecionar',
+                                        controller: _dataNascCtrl,
+                                        errorText: _errData,
+                                        suffixIcon: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            if (_dataSelecionada != null)
+                                              Padding(
+                                                padding: const EdgeInsets.only(right: 8),
+                                                child: Text(
+                                                  '$_idadeCalculada anos',
+                                                  style: const TextStyle(fontWeight: FontWeight.bold),
+                                                ),
                                               ),
-                                          suffixIcon: const Icon(
-                                            Icons.calendar_today,
-                                            size: 20,
-                                          ),
-                                          enabledBorder: OutlineInputBorder(
-                                            borderSide: BorderSide(
-                                              color: _erroData != null
-                                                  ? Colors.red.shade700
-                                                  : Colors.black,
-                                              width: 3,
-                                            ),
-                                            borderRadius: BorderRadius.circular(
-                                              999,
-                                            ),
-                                          ),
-                                          focusedBorder: OutlineInputBorder(
-                                            borderSide: BorderSide(
-                                              color: _erroData != null
-                                                  ? Colors.red.shade700
-                                                  : Colors.black,
-                                              width: 3,
-                                            ),
-                                            borderRadius: BorderRadius.circular(
-                                              999,
-                                            ),
-                                          ),
+                                            const Icon(Icons.calendar_today, size: 20),
+                                            const SizedBox(width: 10),
+                                          ],
                                         ),
                                       ),
                                     ),
                                   ),
-                                ),
-                                if (_dataSelecionada != null) ...[
-                                  const SizedBox(width: 12),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 16,
-                                      vertical: 12,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: NeuroColors.panel,
-                                      border: Border.all(
-                                        color: Colors.black,
-                                        width: 3,
+                                  const SizedBox(height: 14),
+
+                                  // ── Sexo & CPF ──
+                                  Row(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Expanded(
+                                        child: _ValidatedField(
+                                          label: 'Sexo (opcional):',
+                                          hint: 'Ex: Masculino',
+                                          controller: _sexoCtrl,
+                                        ),
                                       ),
-                                      borderRadius: BorderRadius.circular(999),
-                                    ),
-                                    child: Text(
-                                      '$_idadeCalculada anos',
-                                      style: const TextStyle(
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.w700,
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: _ValidatedField(
+                                          label: 'CPF do aluno (opcional):',
+                                          hint: '000.000.000-00',
+                                          controller: _cpfCtrl,
+                                          errorText: _errCpf,
+                                          keyboardType: TextInputType.number,
+                                          inputFormatters: [_CpfMask()],
+                                        ),
                                       ),
-                                    ),
+                                    ],
                                   ),
+                                  const SizedBox(height: 14),
+
+                                  // ── Localização (Município e Estado) ──
+                                  Row(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Expanded(
+                                        flex: 3,
+                                        child: _ValidatedField(
+                                          label: 'Município (opcional):',
+                                          hint: 'Cidade',
+                                          controller: _municipioCtrl,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        flex: 1,
+                                        child: _ValidatedField(
+                                          label: 'UF (opcional):',
+                                          hint: 'PR',
+                                          controller: _estadoCtrl,
+                                          inputFormatters: [LengthLimitingTextInputFormatter(2)],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 20),
+
+                                  // ── Divisor Responsáveis ──
+                                  const Row(
+                                    children: [
+                                      Expanded(child: Divider(thickness: 2)),
+                                      Padding(
+                                        padding: EdgeInsets.symmetric(horizontal: 10),
+                                        child: Text('RESPONSÁVEIS',
+                                            style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800)),
+                                      ),
+                                      Expanded(child: Divider(thickness: 2)),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 14),
+
+                                  // ── Nome Pai ──
+                                  _ValidatedField(
+                                    label: 'Nome do pai (opcional):',
+                                    hint: 'Nome completo do pai',
+                                    controller: _nomePaiCtrl,
+                                  ),
+                                  const SizedBox(height: 14),
+
+                                  // ── Nome Mãe ──
+                                  _ValidatedField(
+                                    label: 'Nome da mãe (opcional):',
+                                    hint: 'Nome completo da mãe',
+                                    controller: _nomeMaeCtrl,
+                                  ),
+                                  const SizedBox(height: 14),
+
+                                  // ── Telefone ──
+                                  _ValidatedField(
+                                    label: 'Telefone do responsável (opcional):',
+                                    hint: '(xx) xxxxx-xxxx',
+                                    controller: _telCtrl,
+                                    errorText: _errTelefone,
+                                    keyboardType: TextInputType.phone,
+                                    inputFormatters: [_TelefoneMask()],
+                                  ),
+                                  const SizedBox(height: 20),
+
+                                  // ── Divisor Observações ──
+                                  const Row(
+                                    children: [
+                                      Expanded(child: Divider(thickness: 2)),
+                                      Padding(
+                                        padding: EdgeInsets.symmetric(horizontal: 10),
+                                        child: Text('OBSERVAÇÕES',
+                                            style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800)),
+                                      ),
+                                      Expanded(child: Divider(thickness: 2)),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 14),
+
+                                  // ── Observações ──
+                                  _ValidatedField(
+                                    label: 'Observações (opcional):',
+                                    hint: 'Informações adicionais...',
+                                    controller: _obsCtrl,
+                                  ),
+                                  const SizedBox(height: 24),
                                 ],
-                              ],
+                              ),
                             ),
-                            if (_erroData != null)
-                              Padding(
-                                padding: const EdgeInsets.only(
-                                  left: 14,
-                                  top: 5,
-                                ),
-                                child: Row(
-                                  children: [
-                                    Icon(
-                                      Icons.error_outline,
-                                      size: 13,
-                                      color: Colors.red.shade700,
-                                    ),
-                                    const SizedBox(width: 4),
-                                    Text(
-                                      _erroData!,
-                                      style: TextStyle(
-                                        fontSize: 11,
-                                        color: Colors.red.shade700,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                          ],
-                        ),
-                        const SizedBox(height: 18),
-
-                        // ── Divisor ──
-                        const Padding(
-                          padding: EdgeInsets.only(bottom: 14),
-                          child: Row(
-                            children: [
-                              Expanded(child: Divider(thickness: 2)),
-                              Padding(
-                                padding: EdgeInsets.symmetric(horizontal: 10),
-                                child: Text(
-                                  'RESPONSÁVEIS',
-                                  style: TextStyle(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w800,
-                                  ),
-                                ),
-                              ),
-                              Expanded(child: Divider(thickness: 2)),
-                            ],
                           ),
-                        ),
-
-                        // ── Nome pai ──
-                        _Campo(
-                          label: 'Nome do pai (opcional):',
-                          hint: 'Nome completo do pai',
-                          controller: _nomePaiController,
-                          maxLength: 70,
-                        ),
-                        const SizedBox(height: 14),
-
-                        // ── CPF pai ──
-                        _Campo(
-                          label: 'CPF do pai (opcional):',
-                          hint: '000.000.000-00',
-                          controller: _cpfPaiController,
-                          errorText: _erroCpfPai,
-                          keyboardType: TextInputType.number,
-                          inputFormatters: [_CpfMask()],
-                        ),
-                        const SizedBox(height: 14),
-
-                        // ── Nome mãe ──
-                        _Campo(
-                          label: 'Nome da mãe (opcional):',
-                          hint: 'Nome completo da mãe',
-                          controller: _nomeMaeController,
-                          maxLength: 70,
-                        ),
-                        const SizedBox(height: 14),
-
-                        // ── CPF mãe ──
-                        _Campo(
-                          label: 'CPF da mãe (opcional):',
-                          hint: '000.000.000-00',
-                          controller: _cpfMaeController,
-                          errorText: _erroCpfMae,
-                          keyboardType: TextInputType.number,
-                          inputFormatters: [_CpfMask()],
-                        ),
-                        const SizedBox(height: 14),
-
-                        // ── Telefone ──
-                        _Campo(
-                          label: 'Telefone do responsável (opcional):',
-                          hint: '(xx) xxxxx-xxxx',
-                          controller: _telefoneController,
-                          errorText: _erroTelefone,
-                          keyboardType: TextInputType.phone,
-                          inputFormatters: [_TelefoneMask()],
-                        ),
-                        const SizedBox(height: 18),
-
-                        // ── Divisor ──
-                        const Padding(
-                          padding: EdgeInsets.only(bottom: 14),
-                          child: Row(
-                            children: [
-                              Expanded(child: Divider(thickness: 2)),
-                              Padding(
-                                padding: EdgeInsets.symmetric(horizontal: 10),
-                                child: Text(
-                                  'OBSERVAÇÕES',
-                                  style: TextStyle(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w800,
+                          const SizedBox(height: 10),
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: _carregando
+                                ? const CircularProgressIndicator(color: Colors.black)
+                                : NeuroPillButton(
+                                    text: 'SALVAR',
+                                    width: 130,
+                                    height: 42,
+                                    onPressed: _salvar,
                                   ),
-                                ),
-                              ),
-                              Expanded(child: Divider(thickness: 2)),
-                            ],
                           ),
-                        ),
-
-                        // ── Observações (200 chars) ──
-                        _Campo(
-                          label: 'Observações (opcional):',
-                          hint: 'Informações adicionais sobre o aluno...',
-                          controller: _obsController,
-                          maxLines: 4,
-                          maxLength: 200,
-                        ),
-
-                        const SizedBox(height: 24),
-                        Align(
-                          alignment: Alignment.centerRight,
-                          child: _carregando
-                              ? const CircularProgressIndicator(
-                                  color: Colors.black,
-                                )
-                              : NeuroPillButton(
-                                  text: 'SALVAR',
-                                  width: 130,
-                                  height: 42,
-                                  onPressed: _salvar,
-                                ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),

@@ -11,6 +11,8 @@ public class AuthService : IAuthService
     private readonly AppDbContext _db;
     private readonly JwtHelper _jwt;
 
+    private static readonly string[] PerfisValidos = ["admin", "profissional", "recepcao"];
+
     public AuthService(AppDbContext db, JwtHelper jwt)
     {
         _db = db;
@@ -22,25 +24,24 @@ public class AuthService : IAuthService
     {
         bool emailExistente = await _db.Usuarios
             .AnyAsync(u => u.Email == dto.Email.ToLower());
-
         if (emailExistente)
             return null;
 
-        // Garante que só perfis válidos sejam aceitos
-        var perfisValidos = new[] { "admin", "gerente", "usuario" };
-        var perfil = perfisValidos.Contains(dto.Perfil) ? dto.Perfil : "usuario";
+        var perfil = PerfisValidos.Contains(dto.Perfil) ? dto.Perfil : "profissional";
 
         var usuario = new Usuario
         {
-            Nome      = dto.Nome.Trim(),
-            Email     = dto.Email.Trim().ToLower(),
-            SenhaHash = BCrypt.Net.BCrypt.HashPassword(dto.Senha),
-            Perfil    = perfil,
+            Nome         = dto.Nome.Trim(),
+            Email        = dto.Email.Trim().ToLower(),
+            SenhaHash    = BCrypt.Net.BCrypt.HashPassword(dto.Senha),
+            Perfil       = perfil,
+            Cbo          = string.Empty,
+            TipoRegistro = string.Empty,
+            NumRegistro  = string.Empty,
         };
 
         _db.Usuarios.Add(usuario);
         await _db.SaveChangesAsync();
-
         return GerarResposta(usuario);
     }
 
@@ -49,7 +50,6 @@ public class AuthService : IAuthService
     {
         var usuario = await _db.Usuarios
             .FirstOrDefaultAsync(u => u.Email == dto.Email.ToLower() && u.Ativo);
-
         if (usuario is null)
             return null;
 
@@ -63,14 +63,17 @@ public class AuthService : IAuthService
     private AuthResponseDto GerarResposta(Usuario usuario)
     {
         var (token, expiraEm) = _jwt.GerarToken(usuario);
-
         return new AuthResponseDto
         {
-            Token    = token,
-            Nome     = usuario.Nome,
-            Email    = usuario.Email,
-            Perfil   = usuario.Perfil,
-            ExpiraEm = expiraEm,
+            Id           = usuario.Id,
+            Token        = token,
+            Nome         = usuario.Nome,
+            Email        = usuario.Email,
+            Perfil       = usuario.Perfil,
+            Cbo          = usuario.Cbo,
+            TipoRegistro = usuario.TipoRegistro,
+            NumRegistro  = usuario.NumRegistro,
+            ExpiraEm     = expiraEm,
         };
     }
 }

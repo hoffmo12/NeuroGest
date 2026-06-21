@@ -17,10 +17,14 @@ class AuthService {
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         await _salvarSessao(
-          token:  data['token'],
-          nome:   data['nome'],
-          email:  data['email'],
-          perfil: data['perfil'],   // <-- salva o perfil
+          token:        data['token']        ?? '',
+          id:           data['id']           ?? 0,
+          nome:         data['nome']         ?? '',
+          email:        data['email']        ?? '',
+          perfil:       data['perfil']       ?? '',
+          cbo:          data['cbo']          ?? '',
+          tipoRegistro: data['tipoRegistro'] ?? '',
+          numRegistro:  data['numRegistro']  ?? '',
         );
         return AuthResult.sucesso(data['nome'], data['perfil']);
       } else if (response.statusCode == 401) {
@@ -37,34 +41,54 @@ class AuthService {
   // ─── Salvar sessão ────────────────────────────────────
   static Future<void> _salvarSessao({
     required String token,
+    required int    id,
     required String nome,
     required String email,
     required String perfil,
+    required String cbo,
+    required String tipoRegistro,
+    required String numRegistro,
   }) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('token',  token);
-    await prefs.setString('nome',   nome);
-    await prefs.setString('email',  email);
-    await prefs.setString('perfil', perfil);
+    await prefs.setString('token',        token);
+    await prefs.setInt   ('id',           id);
+    await prefs.setString('nome',         nome);
+    await prefs.setString('email',        email);
+    await prefs.setString('perfil',       perfil);
+    await prefs.setString('cbo',          cbo);
+    await prefs.setString('tipoRegistro', tipoRegistro);
+    await prefs.setString('numRegistro',  numRegistro);
   }
 
   // ─── Getters ──────────────────────────────────────────
-  static Future<String?> getToken()  async =>
+  static Future<String?> getToken()        async =>
       (await SharedPreferences.getInstance()).getString('token');
-
-  static Future<String?> getNome()   async =>
+  static Future<int?>    getId()           async =>
+      (await SharedPreferences.getInstance()).getInt('id');
+  static Future<String?> getNome()         async =>
       (await SharedPreferences.getInstance()).getString('nome');
-
-  static Future<String?> getPerfil() async =>
+  static Future<String?> getEmail()        async =>
+      (await SharedPreferences.getInstance()).getString('email');
+  static Future<String?> getPerfil()       async =>
       (await SharedPreferences.getInstance()).getString('perfil');
+  static Future<String?> getCbo()          async =>
+      (await SharedPreferences.getInstance()).getString('cbo');
+  static Future<String?> getTipoRegistro() async =>
+      (await SharedPreferences.getInstance()).getString('tipoRegistro');
+  static Future<String?> getNumRegistro()  async =>
+      (await SharedPreferences.getInstance()).getString('numRegistro');
 
   // ─── Logout ───────────────────────────────────────────
   static Future<void> logout() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('token');
+    await prefs.remove('id');
     await prefs.remove('nome');
     await prefs.remove('email');
     await prefs.remove('perfil');
+    await prefs.remove('cbo');
+    await prefs.remove('tipoRegistro');
+    await prefs.remove('numRegistro');
   }
 
   static Future<bool> estaLogado() async {

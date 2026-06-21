@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import '../widgets/neuro_widgets.dart';
 import '../services/auth_service.dart';
+import '../models/usuario.dart';
 import 'alunos_screen.dart';
-import 'funcionarios_screen.dart';
+import 'usuarios_screen.dart';
+import 'atendimento_screen.dart';
 import 'login_screen.dart';
+import 'financeiro_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -13,8 +16,8 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
-  String _nome   = '';
-  String _perfil = '';
+  Usuario? _usuario;
+  String? _idCardFocado;
 
   @override
   void initState() {
@@ -23,22 +26,45 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Future<void> _carregarUsuario() async {
-    final nome   = await AuthService.getNome()   ?? '';
-    final perfil = await AuthService.getPerfil() ?? 'usuario';
-    setState(() { _nome = nome; _perfil = perfil; });
+    final id = await AuthService.getId() ?? 0;
+    final nome = await AuthService.getNome() ?? '';
+    final email = await AuthService.getEmail() ?? '';
+    final perfil = await AuthService.getPerfil() ?? 'profissional';
+    final cbo = await AuthService.getCbo() ?? '';
+    final tipoRegistro = await AuthService.getTipoRegistro() ?? '';
+    final numRegistro = await AuthService.getNumRegistro() ?? '';
+
+    setState(() {
+      _usuario = Usuario(
+        id: id,
+        nome: nome,
+        email: email,
+        perfil: perfil,
+        cbo: cbo,
+        tipoRegistro: tipoRegistro,
+        numRegistro: numRegistro,
+        ativo: true,
+        criadoEm: DateTime.now(),
+      );
+    });
   }
 
+  String get _nome => _usuario?.nome ?? '';
+  String get _perfil => _usuario?.perfil ?? '';
+
   bool get _podeVerAtendimentos => true;
-  bool get _podeVerAlunos       => true;
-  bool get _podeVerFinanceiro   => _perfil == 'admin' || _perfil == 'gerente';
-  bool get _podeVerFuncionarios => _perfil == 'admin';
+  bool get _podeVerAlunos => true;
+  bool get _podeVerFinanceiro => _perfil == 'admin';
+  bool get _podeVerUsuarios => _perfil == 'admin';
 
   void _bloqueado(String funcao) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text('Acesso negado: seu perfil não permite acessar $funcao.'),
-      backgroundColor: Colors.red.shade700,
-      behavior: SnackBarBehavior.floating,
-    ));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Acesso negado: seu perfil não permite acessar $funcao.'),
+        backgroundColor: Colors.red.shade700,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
   }
 
   Future<void> _sair() async {
@@ -51,7 +77,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  // ─── Iniciais do nome ─────────────────────────────────
   String get _iniciais {
     final partes = _nome.trim().split(' ');
     if (partes.length >= 2) {
@@ -60,14 +85,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return _nome.isNotEmpty ? _nome[0].toUpperCase() : '?';
   }
 
-  // ─── Badge de perfil ──────────────────────────────────
   Widget _badgePerfil() {
     final map = {
-      'admin':   (const Color(0xFF4CAF50), 'ADMIN'),
-      'gerente': (const Color(0xFF2196F3), 'GERENTE'),
-      'usuario': (const Color(0xFF9E9E9E), 'USUÁRIO'),
+      'admin': (const Color(0xFF4CAF50), 'ADMIN'),
+      'profissional': (const Color(0xFF2196F3), 'PROFISSIONAL'),
+      'recepcao': (const Color(0xFF9E9E9E), 'RECEPÇÃO'),
     };
-    final (cor, label) = map[_perfil] ?? (const Color(0xFF9E9E9E), 'USUÁRIO');
+    final (cor, label) =
+        map[_perfil] ?? (const Color(0xFF9E9E9E), _perfil.toUpperCase());
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
@@ -86,7 +111,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  // ─── Card de módulo ───────────────────────────────────
   Widget _moduloCard({
     required String titulo,
     required String subtitulo,
@@ -95,54 +119,74 @@ class _DashboardScreenState extends State<DashboardScreen> {
     required bool liberado,
     required VoidCallback onTap,
   }) {
+    final isHovered = _idCardFocado == titulo;
     return Opacity(
       opacity: liberado ? 1.0 : 0.4,
-      child: GestureDetector(
-        onTap: liberado ? onTap : () => _bloqueado(titulo),
-        child: Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: const Color(0xFFF8FAFC),
-            border: Border.all(color: NeuroColors.border, width: 1.2),
-            borderRadius: BorderRadius.circular(18),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: corIcone,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(icone, color: Colors.white, size: 20),
+      child: MouseRegion(
+        cursor: liberado ? SystemMouseCursors.click : SystemMouseCursors.basic,
+        onEnter: (_) {
+          if (liberado) setState(() => _idCardFocado = titulo);
+        },
+        onExit: (_) {
+          if (liberado) setState(() => _idCardFocado = null);
+        },
+        child: GestureDetector(
+          onTap: liberado ? onTap : () => _bloqueado(titulo),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 150),
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: isHovered
+                  ? const Color(0xFFEDF2F7)
+                  : const Color(0xFFF8FAFC),
+              border: Border.all(
+                color: isHovered ? Colors.black : NeuroColors.border,
+                width: isHovered ? 1.8 : 1.2,
               ),
-              const SizedBox(height: 12),
-              Text(
-                titulo,
-                style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w800,
-                  color: NeuroColors.text,
-                  letterSpacing: 0.3,
+              borderRadius: BorderRadius.circular(18),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: corIcone,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(icone, color: Colors.white, size: 20),
                 ),
-              ),
-              const SizedBox(height: 3),
-              Text(
-                subtitulo,
-                style: const TextStyle(
-                  fontSize: 11,
-                  color: NeuroColors.mutedText,
-                  fontWeight: FontWeight.w500,
+                const SizedBox(height: 12),
+                Text(
+                  titulo,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w800,
+                    color: NeuroColors.text,
+                    letterSpacing: 0.3,
+                  ),
                 ),
-              ),
-              if (!liberado)
-                const Padding(
-                  padding: EdgeInsets.only(top: 6),
-                  child: Icon(Icons.lock_outline, size: 13, color: NeuroColors.mutedText),
+                const SizedBox(height: 3),
+                Text(
+                  subtitulo,
+                  style: const TextStyle(
+                    fontSize: 11,
+                    color: NeuroColors.mutedText,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
-            ],
+                if (!liberado)
+                  const Padding(
+                    padding: EdgeInsets.only(top: 6),
+                    child: Icon(
+                      Icons.lock_outline,
+                      size: 13,
+                      color: NeuroColors.mutedText,
+                    ),
+                  ),
+              ],
+            ),
           ),
         ),
       ),
@@ -151,6 +195,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Enquanto carrega o usuário mostra loading
+    if (_usuario == null) {
+      return const Scaffold(
+        backgroundColor: NeuroColors.background,
+        body: Center(
+          child: CircularProgressIndicator(color: NeuroColors.primary),
+        ),
+      );
+    }
+
     return Scaffold(
       backgroundColor: NeuroColors.background,
       body: SafeArea(
@@ -168,26 +222,29 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-
-                        // ── TopBar ──
                         NeuroTopBar(
                           title: 'NEUROGEST',
                           right: NeuroPillButton(
                             text: 'SAIR',
-                            width: 80, height: 34, fontSize: 11,
+                            width: 80,
+                            height: 34,
+                            fontSize: 11,
                             onPressed: _sair,
                           ),
                         ),
                         const SizedBox(height: 16),
 
-                        // ── Saudação com avatar ──
+                        // ── Card de boas-vindas ──
                         if (_nome.isNotEmpty) ...[
                           Container(
                             padding: const EdgeInsets.all(14),
                             decoration: BoxDecoration(
                               color: const Color(0xFFF0F4FF),
                               borderRadius: BorderRadius.circular(16),
-                              border: Border.all(color: NeuroColors.border, width: 1),
+                              border: Border.all(
+                                color: NeuroColors.border,
+                                width: 1,
+                              ),
                             ),
                             child: Row(
                               children: [
@@ -212,7 +269,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                 const SizedBox(width: 12),
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
                                         'Olá, $_nome!',
@@ -246,7 +304,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         // ── Divisor MÓDULOS ──
                         Row(
                           children: [
-                            Expanded(child: Container(height: 1, color: NeuroColors.border)),
+                            Expanded(
+                              child: Container(
+                                height: 1,
+                                color: NeuroColors.border,
+                              ),
+                            ),
                             const Padding(
                               padding: EdgeInsets.symmetric(horizontal: 10),
                               child: Text(
@@ -259,12 +322,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                 ),
                               ),
                             ),
-                            Expanded(child: Container(height: 1, color: NeuroColors.border)),
+                            Expanded(
+                              child: Container(
+                                height: 1,
+                                color: NeuroColors.border,
+                              ),
+                            ),
                           ],
                         ),
                         const SizedBox(height: 16),
 
-                        // ── Grid de módulos ──
                         GridView.count(
                           crossAxisCount: 2,
                           shrinkWrap: true,
@@ -279,7 +346,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               icone: Icons.calendar_today_rounded,
                               corIcone: const Color(0xFFF2C94C),
                               liberado: _podeVerAtendimentos,
-                              onTap: () {},
+                              onTap: () => Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) =>
+                                      AtendimentoScreen(usuario: _usuario!),
+                                ),
+                              ),
                             ),
                             _moduloCard(
                               titulo: 'ALUNOS',
@@ -289,7 +362,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               liberado: _podeVerAlunos,
                               onTap: () => Navigator.push(
                                 context,
-                                MaterialPageRoute(builder: (_) => const AlunosScreen()),
+                                MaterialPageRoute(
+                                  builder: (_) => const AlunosScreen(),
+                                ),
                               ),
                             ),
                             _moduloCard(
@@ -298,27 +373,32 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               icone: Icons.attach_money_rounded,
                               corIcone: const Color(0xFF6FCF97),
                               liberado: _podeVerFinanceiro,
-                              onTap: () {},
+                              onTap: () => Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => const FinanceiroScreen(),
+                                ),
+                              ),
                             ),
                             _moduloCard(
-                              titulo: 'FUNCIONÁRIOS',
+                              titulo: 'USUÁRIOS',
                               subtitulo: 'Equipe e acessos',
                               icone: Icons.people_rounded,
                               corIcone: const Color(0xFFEB5757),
-                              liberado: _podeVerFuncionarios,
+                              liberado: _podeVerUsuarios,
                               onTap: () => Navigator.push(
                                 context,
-                                MaterialPageRoute(builder: (_) => const FuncionariosScreen()),
+                                MaterialPageRoute(
+                                  builder: (_) => const UsuariosScreen(),
+                                ),
                               ),
                             ),
                           ],
                         ),
                         const SizedBox(height: 16),
-
-                        // ── Logo ──
                         const Align(
                           alignment: Alignment.bottomRight,
-                          child: NeuroLogo(size: 72),
+                          child: NeuroLogo(size: 72, animated: true),
                         ),
                       ],
                     ),

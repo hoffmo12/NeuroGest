@@ -203,7 +203,7 @@ class _AlunosScreenState extends State<AlunosScreen> {
                           const SizedBox(height: 10),
                           const Align(
                             alignment: Alignment.bottomRight,
-                            child: NeuroLogo(size: 72),
+                            child: NeuroLogo(size: 72, animated: true),
                           ),
                         ],
                       ),

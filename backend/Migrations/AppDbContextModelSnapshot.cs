@@ -79,60 +79,241 @@ namespace NeuroGest.API.Migrations
                     b.ToTable("alunos");
                 });
 
+            modelBuilder.Entity("NeuroGest.API.Models.Atendimento", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("Altura")
+                        .HasColumnType("decimal(4,2)");
+
+                    b.Property<string>("Anamnese")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<decimal>("CircunferenciaAbdominal")
+                        .HasColumnType("decimal(4,2)");
+
+                    b.Property<DateTime>("DataAtendimento")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("Diagnostico")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("ExameFisico")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<int>("IdAluno")
+                        .HasColumnType("int");
+
+                    b.Property<int>("IdUsuario")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("Imc")
+                        .HasColumnType("decimal(4,2)");
+
+                    b.Property<string>("MotivoDaConsulta")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<decimal>("PerimetroCefalico")
+                        .HasColumnType("decimal(4,2)");
+
+                    b.Property<decimal>("PerimetroPanturrilha")
+                        .HasColumnType("decimal(4,2)");
+
+                    b.Property<decimal>("Peso")
+                        .HasColumnType("decimal(5,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IdAluno");
+
+                    b.HasIndex("IdUsuario");
+
+                    b.ToTable("Atendimentos");
+                });
+
+            modelBuilder.Entity("NeuroGest.API.Models.Lancamento", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("DataLancamento")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<DateTime?>("DataPagamento")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<int>("IdAluno")
+                        .HasColumnType("int");
+
+                    b.Property<int>("IdAtendimento")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("IdLancamentoPai")
+                        .HasColumnType("int");
+
+                    b.Property<int>("IdUsuario")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("Quitado")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<decimal>("ValorOriginal")
+                        .HasColumnType("decimal(10,2)");
+
+                    b.Property<decimal>("ValorPago")
+                        .HasColumnType("decimal(10,2)");
+
+                    b.Property<decimal>("ValorRestante")
+                        .HasColumnType("decimal(10,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IdAluno");
+
+                    b.HasIndex("IdAtendimento");
+
+                    b.HasIndex("IdLancamentoPai");
+
+                    b.HasIndex("IdUsuario");
+
+                    b.ToTable("Lancamentos");
+                });
+
             modelBuilder.Entity("NeuroGest.API.Models.Usuario", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("id");
+                        .HasColumnType("int");
 
                     b.Property<bool>("Ativo")
-                        .HasColumnType("tinyint(1)")
-                        .HasColumnName("ativo");
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<string>("Cbo")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<string>("Cpf")
+                        .HasMaxLength(14)
+                        .HasColumnType("varchar(14)");
 
                     b.Property<DateTime>("CriadoEm")
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("criado_em");
+                        .HasColumnType("datetime(6)");
 
                     b.Property<string>("Email")
                         .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("varchar(200)")
-                        .HasColumnName("email");
-
-                    b.Property<string>("Funcao")
-                        .HasMaxLength(100)
-                        .HasColumnType("varchar(100)")
-                        .HasColumnName("funcao");
+                        .HasMaxLength(150)
+                        .HasColumnType("varchar(150)");
 
                     b.Property<string>("Nome")
                         .IsRequired()
                         .HasMaxLength(150)
-                        .HasColumnType("varchar(150)")
-                        .HasColumnName("nome");
+                        .HasColumnType("varchar(150)");
+
+                    b.Property<string>("NumRegistro")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)");
 
                     b.Property<string>("Perfil")
                         .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("varchar(20)")
-                        .HasColumnName("perfil");
+                        .HasMaxLength(30)
+                        .HasColumnType("varchar(30)");
 
                     b.Property<string>("SenhaHash")
                         .IsRequired()
-                        .HasColumnType("longtext")
-                        .HasColumnName("senha_hash");
+                        .HasColumnType("longtext");
 
                     b.Property<string>("Telefone")
                         .HasMaxLength(20)
-                        .HasColumnType("varchar(20)")
-                        .HasColumnName("telefone");
+                        .HasColumnType("varchar(20)");
+
+                    b.Property<string>("TipoRegistro")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)");
 
                     b.HasKey("Id");
 
                     b.HasIndex("Email")
                         .IsUnique();
 
-                    b.ToTable("usuarios");
+                    b.ToTable("Usuarios");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Ativo = true,
+                            Cbo = "",
+                            CriadoEm = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Email = "admin@neurogect.com",
+                            Nome = "Administrador",
+                            NumRegistro = "",
+                            Perfil = "admin",
+                            SenhaHash = "$2a$11$t62m1F6bPgAJVefw8RK5GOkbptZjmWBe/vqcwokfAJHr..x/WVOeW",
+                            TipoRegistro = ""
+                        });
+                });
+
+            modelBuilder.Entity("NeuroGest.API.Models.Atendimento", b =>
+                {
+                    b.HasOne("NeuroGest.API.Models.Aluno", "Aluno")
+                        .WithMany()
+                        .HasForeignKey("IdAluno")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("NeuroGest.API.Models.Usuario", "Usuario")
+                        .WithMany()
+                        .HasForeignKey("IdUsuario")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Aluno");
+
+                    b.Navigation("Usuario");
+                });
+
+            modelBuilder.Entity("NeuroGest.API.Models.Lancamento", b =>
+                {
+                    b.HasOne("NeuroGest.API.Models.Aluno", "Aluno")
+                        .WithMany()
+                        .HasForeignKey("IdAluno")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("NeuroGest.API.Models.Atendimento", "Atendimento")
+                        .WithMany()
+                        .HasForeignKey("IdAtendimento")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("NeuroGest.API.Models.Lancamento", "LancamentoPai")
+                        .WithMany()
+                        .HasForeignKey("IdLancamentoPai")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("NeuroGest.API.Models.Usuario", "Usuario")
+                        .WithMany()
+                        .HasForeignKey("IdUsuario")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Aluno");
+
+                    b.Navigation("Atendimento");
+
+                    b.Navigation("LancamentoPai");
+
+                    b.Navigation("Usuario");
                 });
 #pragma warning restore 612, 618
         }

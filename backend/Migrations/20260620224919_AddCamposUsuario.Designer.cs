@@ -11,8 +11,8 @@ using NeuroGest.API.Data;
 namespace NeuroGest.API.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260502214327_AddAlunos")]
-    partial class AddAlunos
+    [Migration("20260620224919_AddCamposUsuario")]
+    partial class AddCamposUsuario
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -86,56 +86,77 @@ namespace NeuroGest.API.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("id");
+                        .HasColumnType("int");
 
                     b.Property<bool>("Ativo")
-                        .HasColumnType("tinyint(1)")
-                        .HasColumnName("ativo");
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<string>("Cbo")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<string>("Cpf")
+                        .HasMaxLength(14)
+                        .HasColumnType("varchar(14)");
 
                     b.Property<DateTime>("CriadoEm")
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("criado_em");
+                        .HasColumnType("datetime(6)");
 
                     b.Property<string>("Email")
                         .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("varchar(200)")
-                        .HasColumnName("email");
-
-                    b.Property<string>("Funcao")
-                        .HasMaxLength(100)
-                        .HasColumnType("varchar(100)")
-                        .HasColumnName("funcao");
+                        .HasMaxLength(150)
+                        .HasColumnType("varchar(150)");
 
                     b.Property<string>("Nome")
                         .IsRequired()
                         .HasMaxLength(150)
-                        .HasColumnType("varchar(150)")
-                        .HasColumnName("nome");
+                        .HasColumnType("varchar(150)");
+
+                    b.Property<string>("NumRegistro")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)");
 
                     b.Property<string>("Perfil")
                         .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("varchar(20)")
-                        .HasColumnName("perfil");
+                        .HasMaxLength(30)
+                        .HasColumnType("varchar(30)");
 
                     b.Property<string>("SenhaHash")
                         .IsRequired()
-                        .HasColumnType("longtext")
-                        .HasColumnName("senha_hash");
+                        .HasColumnType("longtext");
 
                     b.Property<string>("Telefone")
                         .HasMaxLength(20)
-                        .HasColumnType("varchar(20)")
-                        .HasColumnName("telefone");
+                        .HasColumnType("varchar(20)");
+
+                    b.Property<string>("TipoRegistro")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)");
 
                     b.HasKey("Id");
 
                     b.HasIndex("Email")
                         .IsUnique();
 
-                    b.ToTable("usuarios");
+                    b.ToTable("Usuarios");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Ativo = true,
+                            Cbo = "",
+                            CriadoEm = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Email = "admin@neurogect.com",
+                            Nome = "Administrador",
+                            NumRegistro = "",
+                            Perfil = "admin",
+                            SenhaHash = "$2a$11$VahVgxsRzueAM.GheaWqZ.UImRxIse5OtjuKe7mIoDe9FvGxk.poG",
+                            TipoRegistro = ""
+                        });
                 });
 #pragma warning restore 612, 618
         }

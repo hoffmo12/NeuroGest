@@ -1,4 +1,7 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
+import 'package:flutter/services.dart';
 
 class NeuroColors {
   static const Color background = Color(0xFFF5F7FA);
@@ -7,6 +10,78 @@ class NeuroColors {
   static const Color primary = Color(0xFF4F7CFE);
   static const Color text = Color(0xFF1F2937);
   static const Color mutedText = Color(0xFF6B7280);
+}
+
+// Container neomórfico padrão (fundo claro, sombra suave)
+class NeuroContainer extends StatelessWidget {
+  final Widget child;
+  final Color? color;
+  final EdgeInsetsGeometry? padding;
+  final double radius;
+
+  const NeuroContainer({
+    super.key,
+    required this.child,
+    this.color,
+    this.padding,
+    this.radius = 24,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: padding,
+      decoration: BoxDecoration(
+        color: color ?? const Color(0xFFF3F2EE),
+        borderRadius: BorderRadius.circular(radius),
+        border: Border.all(color: NeuroColors.border, width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.06),
+            blurRadius: 24,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: child,
+    );
+  }
+}
+
+// Container alternativo (fundo branco por padrão, bordas mais suaves)
+class NeuroAContainer extends StatelessWidget {
+  final Widget child;
+  final Color? color;
+  final EdgeInsetsGeometry? padding;
+  final double radius;
+
+  const NeuroAContainer({
+    super.key,
+    required this.child,
+    this.color,
+    this.padding,
+    this.radius = 16,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: padding,
+      decoration: BoxDecoration(
+        color: color ?? Colors.white,
+        borderRadius: BorderRadius.circular(radius),
+        border: Border.all(color: NeuroColors.border, width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: child,
+    );
+  }
 }
 
 class NeuroPanel extends StatelessWidget {
@@ -91,6 +166,9 @@ class NeuroTextField extends StatelessWidget {
   final TextEditingController controller;
   final bool obscureText;
   final Widget? suffixIcon;
+  final TextInputType? keyboardType;
+  final List<TextInputFormatter>? inputFormatters;
+  final ValueChanged<String>? onChanged;
 
   const NeuroTextField({
     super.key,
@@ -99,6 +177,9 @@ class NeuroTextField extends StatelessWidget {
     required this.controller,
     this.obscureText = false,
     this.suffixIcon,
+    this.keyboardType,
+    this.inputFormatters,
+    this.onChanged,
   });
 
   @override
@@ -122,6 +203,9 @@ class NeuroTextField extends StatelessWidget {
         TextField(
           controller: controller,
           obscureText: obscureText,
+          keyboardType: keyboardType,
+          inputFormatters: inputFormatters,
+          onChanged: onChanged,
           decoration: InputDecoration(
             hintText: hint,
             hintStyle: const TextStyle(
@@ -179,67 +263,148 @@ class NeuroHeaderTitle extends StatelessWidget {
   }
 }
 
-class NeuroLogo extends StatelessWidget {
+// AGORA APENAS O NEUROLOGO FOI CONVERTIDO PARA STATEFUL E POSSUI ANIMAÇÃO DINÂMICA
+class NeuroLogo extends StatefulWidget {
   final double size;
+  final bool animated;
 
   const NeuroLogo({
-    super.key,
-    this.size = 72,
+    super.key, 
+    this.size = 72, 
+    this.animated = false,
   });
 
   @override
-  Widget build(BuildContext context) {
-    final pieceSize = size * 0.36;
+  State<NeuroLogo> createState() => _NeuroLogoState();
+}
 
-    Widget piece(Color color, IconData icon) {
-      return Container(
-        width: pieceSize,
-        height: pieceSize,
-        decoration: BoxDecoration(
-          color: color,
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: [
-            BoxShadow(
-              color: color.withOpacity(0.25),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Icon(
-          icon,
-          color: Colors.white,
-          size: pieceSize * 0.56,
-        ),
-      );
+class _NeuroLogoState extends State<NeuroLogo> with SingleTickerProviderStateMixin {
+  late final Ticker _ticker;
+  final Random _random = Random();
+  late double pieceSize;
+
+  /// Posições e velocidades das peças
+  late List<Offset> positions;
+  late List<Offset> velocities;
+
+  @override
+  void initState() {
+    super.initState();
+    pieceSize = widget.size * 0.36;
+
+    // Posições base iniciais (Layout do quebra-cabeça)
+    positions = [
+      Offset(widget.size * 0.30, 0),                       // Amarelo
+      Offset(0, widget.size * 0.25),                      // Azul
+      Offset(widget.size * 1.5 - pieceSize, widget.size * 0.25), // Verde (Ajustado para a proporção correta de largura)
+      Offset(widget.size * 0.42, widget.size - pieceSize), // Vermelho
+    ];
+
+    velocities = List.generate(
+      4,
+      (_) => Offset(
+        (_random.nextDouble() - 0.5) * 1.2,
+        (_random.nextDouble() - 0.5) * 1.2,
+      ),
+    );
+
+    _ticker = createTicker(_update);
+
+    if (widget.animated) {
+      _ticker.start();
     }
+  }
 
-    return SizedBox(
-      width: size,
-      height: size,
-      child: Stack(
-        children: [
-          Positioned(
-            top: 0,
-            left: size * 0.30,
-            child: piece(const Color(0xFFF2C94C), Icons.extension),
-          ),
-          Positioned(
-            top: size * 0.25,
-            left: 0,
-            child: piece(const Color(0xFF56CCF2), Icons.extension),
-          ),
-          Positioned(
-            top: size * 0.25,
-            right: 0,
-            child: piece(const Color(0xFF6FCF97), Icons.extension),
-          ),
-          Positioned(
-            bottom: 0,
-            left: size * 0.42,
-            child: piece(const Color(0xFFEB5757), Icons.extension),
+  void _update(Duration elapsed) {
+    final maxX = widget.size * 1.5 - pieceSize;
+    final maxY = widget.size - pieceSize;
+
+    setState(() {
+      for (int i = 0; i < positions.length; i++) {
+        var pos = positions[i];
+        var vel = velocities[i];
+
+        double newX = pos.dx + vel.dx;
+        double newY = pos.dy + vel.dy;
+
+        // Borda Direita/Esquerda
+        if (newX <= 0 || newX >= maxX) {
+          vel = Offset(-vel.dx, vel.dy);
+          newX = newX.clamp(0, maxX);
+        }
+
+        // Borda Superior/Inferior
+        if (newY <= 0 || newY >= maxY) {
+          vel = Offset(vel.dx, -vel.dy);
+          newY = newY.clamp(0, maxY);
+        }
+
+        positions[i] = Offset(newX, newY);
+        velocities[i] = vel;
+      }
+
+      // Colisão física entre as peças
+      for (int i = 0; i < positions.length; i++) {
+        for (int j = i + 1; j < positions.length; j++) {
+          final dx = positions[i].dx - positions[j].dx;
+          final dy = positions[i].dy - positions[j].dy;
+          final distance = sqrt(dx * dx + dy * dy);
+
+          if (distance < pieceSize * 0.85) {
+            final temp = velocities[i];
+            velocities[i] = velocities[j];
+            velocities[j] = temp;
+          }
+        }
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _ticker.dispose();
+    super.dispose();
+  }
+
+  Widget piece(Color color) {
+    return Container(
+      width: pieceSize,
+      height: pieceSize,
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: color.withOpacity(0.25),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
           ),
         ],
+      ),
+      child: Icon(Icons.extension, color: Colors.white, size: pieceSize * 0.56),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = [
+      const Color(0xFFF2C94C),
+      const Color(0xFF56CCF2),
+      const Color(0xFF6FCF97),
+      const Color(0xFFEB5757),
+    ];
+
+    return SizedBox(
+      width: widget.size * 1.5,
+      height: widget.size,
+      child: Stack(
+        children: List.generate(4, (index) {
+          return Positioned(
+            left: positions[index].dx,
+            top: positions[index].dy,
+            child: piece(colors[index]),
+          );
+        }),
       ),
     );
   }

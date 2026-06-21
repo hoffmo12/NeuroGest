@@ -51,7 +51,7 @@ builder.Services.AddCors(options =>
 // ─── Serviços ─────────────────────────────────────────────
 builder.Services.AddScoped<JwtHelper>();
 builder.Services.AddScoped<IAuthService, AuthService>();
-builder.Services.AddScoped<IFuncionarioService, FuncionarioService>();
+builder.Services.AddScoped<IUsuarioService, UsuarioService>();
 builder.Services.AddScoped<IAlunoService, AlunoService>();
 
 // ─── Controllers + Swagger ────────────────────────────────

@@ -11,8 +11,8 @@ using NeuroGest.API.Data;
 namespace NeuroGest.API.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260502153906_AddFuncaoTelefoneUsuario")]
-    partial class AddFuncaoTelefoneUsuario
+    [Migration("20260620222524_CriacaoInicial")]
+    partial class CriacaoInicial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -21,6 +21,66 @@ namespace NeuroGest.API.Migrations
             modelBuilder
                 .HasAnnotation("ProductVersion", "8.0.0")
                 .HasAnnotation("Relational:MaxIdentifierLength", 64);
+
+            modelBuilder.Entity("NeuroGest.API.Models.Aluno", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("id");
+
+                    b.Property<bool>("Ativo")
+                        .HasColumnType("tinyint(1)")
+                        .HasColumnName("ativo");
+
+                    b.Property<string>("CpfMae")
+                        .HasMaxLength(14)
+                        .HasColumnType("varchar(14)")
+                        .HasColumnName("cpf_mae");
+
+                    b.Property<string>("CpfPai")
+                        .HasMaxLength(14)
+                        .HasColumnType("varchar(14)")
+                        .HasColumnName("cpf_pai");
+
+                    b.Property<DateTime>("CriadoEm")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("criado_em");
+
+                    b.Property<DateOnly>("DataNascimento")
+                        .HasColumnType("date")
+                        .HasColumnName("data_nascimento");
+
+                    b.Property<string>("Nome")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("varchar(150)")
+                        .HasColumnName("nome");
+
+                    b.Property<string>("NomeMae")
+                        .HasMaxLength(150)
+                        .HasColumnType("varchar(150)")
+                        .HasColumnName("nome_mae");
+
+                    b.Property<string>("NomePai")
+                        .HasMaxLength(150)
+                        .HasColumnType("varchar(150)")
+                        .HasColumnName("nome_pai");
+
+                    b.Property<string>("Observacoes")
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)")
+                        .HasColumnName("observacoes");
+
+                    b.Property<string>("TelefoneResponsavel")
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)")
+                        .HasColumnName("telefone_responsavel");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("alunos");
+                });
 
             modelBuilder.Entity("NeuroGest.API.Models.Usuario", b =>
                 {
