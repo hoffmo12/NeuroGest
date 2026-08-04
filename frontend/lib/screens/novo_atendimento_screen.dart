@@ -60,6 +60,7 @@ class _NovoAtendimentoScreenState extends State<NovoAtendimentoScreen> {
     final alturaCm = double.tryParse(_alturaCtrl.text.replaceAll(',', '.'));
     setState(() {
       if (peso != null && alturaCm != null && alturaCm > 0) {
+        // altura é digitada em cm, mas a fórmula do IMC usa metros
         final alturaM = alturaCm / 100;
         _imc = peso / (alturaM * alturaM);
       } else {

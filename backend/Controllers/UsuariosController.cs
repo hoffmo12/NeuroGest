@@ -31,6 +31,20 @@ public class UsuariosController : ControllerBase
         return Ok(lista);
     }
 
+    // GET /api/usuarios/profissionais
+    /// <summary>Lista básica (id/nome/cbo) dos usuários ativos, usada para o
+    /// seletor de profissional do calendário. Diferente de GET /api/usuarios,
+    /// aqui qualquer usuário autenticado tem acesso.</summary>
+    [HttpGet("profissionais")]
+    public async Task<IActionResult> ListarProfissionais()
+    {
+        var lista = await _service.ListarAsync();
+        var profissionais = lista
+            .Where(u => u.Ativo)
+            .Select(u => new ProfissionalDto { Id = u.Id, Nome = u.Nome, Cbo = u.Cbo });
+        return Ok(profissionais);
+    }
+
     // GET /api/usuarios/{id}
     /// <summary>Busca um usuário pelo ID (Apenas Admin).</summary>
     [HttpGet("{id}")]

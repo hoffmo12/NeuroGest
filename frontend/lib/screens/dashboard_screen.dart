@@ -7,6 +7,7 @@ import 'usuarios_screen.dart';
 import 'atendimento_screen.dart';
 import 'login_screen.dart';
 import 'financeiro_screen.dart';
+import 'calendario_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -54,6 +55,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   bool get _podeVerAtendimentos => true;
   bool get _podeVerAlunos => true;
+  bool get _podeVerCalendario => true;
   bool get _podeVerFinanceiro => _perfil == 'admin';
   bool get _podeVerUsuarios => _perfil == 'admin';
 
@@ -331,6 +333,25 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           ],
                         ),
                         const SizedBox(height: 16),
+
+                        SizedBox(
+                          width: double.infinity,
+                          child: _moduloCard(
+                            titulo: 'CALENDÁRIO',
+                            subtitulo: 'Gerenciar agendamentos',
+                            icone: Icons.calendar_today_rounded,
+                            corIcone: Colors.deepPurpleAccent,
+                            liberado: _podeVerCalendario,
+                            onTap: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) =>
+                                    CalendarioScreen(usuario: _usuario!),
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
 
                         GridView.count(
                           crossAxisCount: 2,

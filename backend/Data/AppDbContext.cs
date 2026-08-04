@@ -11,6 +11,7 @@ public class AppDbContext : DbContext
     public DbSet<Aluno>       Alunos       { get; set; }
     public DbSet<Atendimento> Atendimentos { get; set; }
     public DbSet<Lancamento>  Lancamentos  { get; set; }
+    public DbSet<Agendamento> Agendamentos { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -60,6 +61,20 @@ public class AppDbContext : DbContext
             .HasOne(l => l.LancamentoPai)
             .WithMany()
             .HasForeignKey(l => l.IdLancamentoPai)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // Agendamento → Aluno
+        modelBuilder.Entity<Agendamento>()
+            .HasOne(a => a.Aluno)
+            .WithMany()
+            .HasForeignKey(a => a.IdAluno)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // Agendamento → Usuario
+        modelBuilder.Entity<Agendamento>()
+            .HasOne(a => a.Usuario)
+            .WithMany()
+            .HasForeignKey(a => a.IdUsuario)
             .OnDelete(DeleteBehavior.Restrict);
 
         // ─── Seed: admin padrão ───────────────────────────
