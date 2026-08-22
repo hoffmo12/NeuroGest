@@ -27,9 +27,15 @@ public class Aluno
     [Column("nome_pai")]
     public string? NomePai { get; set; }
 
+    [Required]
     [MaxLength(150)]
     [Column("nome_mae")]
-    public string? NomeMae { get; set; }
+    public string NomeMae { get; set; } = string.Empty;
+
+    [Required]
+    [MaxLength(14)]
+    [Column("cpf")]
+    public string Cpf { get; set; } = string.Empty;
 
     [MaxLength(14)]
     [Column("cpf_pai")]

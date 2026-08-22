@@ -5,6 +5,7 @@ class Atendimento {
   final String nomeAluno;
   final String nomeUsuario;
   final String cboUsuario;
+  final int? idAgendamento;
   final String motivoDaConsulta;
   final String anamnese;
   final double peso;
@@ -24,6 +25,7 @@ class Atendimento {
     this.nomeAluno = '',
     this.nomeUsuario = '',
     this.cboUsuario = '',
+    this.idAgendamento,
     required this.motivoDaConsulta,
     required this.anamnese,
     required this.peso,
@@ -45,6 +47,7 @@ class Atendimento {
       nomeAluno:              json['nomeAluno'] as String? ?? '',
       nomeUsuario:            json['nomeUsuario'] as String? ?? '',
       cboUsuario:             json['cboUsuario'] as String? ?? '',
+      idAgendamento:          json['idAgendamento'] as int?,
       motivoDaConsulta:       json['motivoDaConsulta'] as String,
       anamnese:               json['anamnese'] as String,
       peso:                   (json['peso'] as num).toDouble(),
@@ -64,6 +67,7 @@ class Atendimento {
       'id':                     id,
       'idAluno':                idAluno,
       'idUsuario':              idUsuario,
+      'idAgendamento':          idAgendamento,
       'motivoDaConsulta':       motivoDaConsulta,
       'anamnese':               anamnese,
       'peso':                   peso,

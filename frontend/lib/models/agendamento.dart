@@ -2,36 +2,42 @@ class Agendamento {
   final int id;
   final int idAluno;
   final String nomeAluno;
+  final String? observacoesAluno;
   final int idUsuario;
   final String nomeUsuario;
   final DateTime horario;
   final double valorConsulta;
   final bool estaPago;
   final bool faltou;
+  final bool temAtendimento;
 
   Agendamento({
     required this.id,
     required this.idAluno,
     required this.nomeAluno,
+    this.observacoesAluno,
     required this.idUsuario,
     required this.nomeUsuario,
     required this.horario,
     required this.valorConsulta,
     required this.estaPago,
     required this.faltou,
+    this.temAtendimento = false,
   });
 
   factory Agendamento.fromJson(Map<String, dynamic> json) {
     return Agendamento(
-      id:            json['id'],
-      idAluno:       json['idAluno'],
-      nomeAluno:     json['nomeAluno'] ?? '',
-      idUsuario:     json['idUsuario'],
-      nomeUsuario:   json['nomeUsuario'] ?? '',
-      horario:       DateTime.parse(json['horario'].toString()),
-      valorConsulta: (json['valorConsulta'] as num).toDouble(),
-      estaPago:      json['estaPago'],
-      faltou:        json['faltou'],
+      id:               json['id'],
+      idAluno:          json['idAluno'],
+      nomeAluno:        json['nomeAluno'] ?? '',
+      observacoesAluno: json['observacoesAluno'],
+      idUsuario:        json['idUsuario'],
+      nomeUsuario:      json['nomeUsuario'] ?? '',
+      horario:          DateTime.parse(json['horario'].toString()),
+      valorConsulta:    (json['valorConsulta'] as num).toDouble(),
+      estaPago:         json['estaPago'],
+      faltou:           json['faltou'],
+      temAtendimento:   json['temAtendimento'] ?? false,
     );
   }
 }

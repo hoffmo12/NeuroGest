@@ -9,5 +9,5 @@ public interface IAlunoService
     Task<AlunoResponseDto> CriarAsync(AlunoDto dto);
     Task<(AlunoResponseDto? dto, string? erro)> EditarAsync(int id, AlunoDto dto);
     Task<bool> AlternarAtivoAsync(int id);
-    Task<bool> ExcluirAsync(int id);
+    Task<(bool ok, string? erro)> ExcluirAsync(int id);
 }

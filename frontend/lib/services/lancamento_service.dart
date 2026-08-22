@@ -50,7 +50,7 @@ class LancamentoService {
     required int idAluno,
     required int idAtendimento,
     required int idUsuario,
-    required double valorOriginal,
+    // required double valorOriginal,
   }) async {
     final response = await http.post(
       Uri.parse(_baseUrl),
@@ -59,7 +59,7 @@ class LancamentoService {
         'idAluno':       idAluno,
         'idAtendimento': idAtendimento,
         'idUsuario':     idUsuario,
-        'valorOriginal': valorOriginal,
+        // 'valorOriginal': valorOriginal,
       }),
     );
     if (response.statusCode == 201) return null;

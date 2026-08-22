@@ -41,7 +41,8 @@ public class LancamentoResponseDto
     public int      Id                { get; set; }
     public int      IdAluno           { get; set; }
     public string   NomeAluno         { get; set; } = string.Empty;
-    public int      IdAtendimento     { get; set; }
+    public int?     IdAtendimento     { get; set; }
+    public int?     IdAgendamento     { get; set; }
     public int      IdUsuario         { get; set; }
     public string   NomeUsuario       { get; set; } = string.Empty;
     public int?     IdLancamentoPai   { get; set; }

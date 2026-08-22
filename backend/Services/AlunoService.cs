@@ -47,7 +47,8 @@ public class AlunoService : IAlunoService
             Nome                = dto.Nome.Trim(),
             DataNascimento      = dto.DataNascimento,
             NomePai             = dto.NomePai?.Trim(),
-            NomeMae             = dto.NomeMae?.Trim(),
+            NomeMae             = dto.NomeMae.Trim(),
+            Cpf                 = dto.Cpf.Trim(),
             CpfPai              = dto.CpfPai?.Trim(),
             CpfMae              = dto.CpfMae?.Trim(),
             TelefoneResponsavel = dto.TelefoneResponsavel?.Trim(),
@@ -69,7 +70,8 @@ public class AlunoService : IAlunoService
         aluno.Nome                = dto.Nome.Trim();
         aluno.DataNascimento      = dto.DataNascimento;
         aluno.NomePai             = dto.NomePai?.Trim();
-        aluno.NomeMae             = dto.NomeMae?.Trim();
+        aluno.NomeMae             = dto.NomeMae.Trim();
+        aluno.Cpf                 = dto.Cpf.Trim();
         aluno.CpfPai              = dto.CpfPai?.Trim();
         aluno.CpfMae              = dto.CpfMae?.Trim();
         aluno.TelefoneResponsavel = dto.TelefoneResponsavel?.Trim();
@@ -91,14 +93,21 @@ public class AlunoService : IAlunoService
     }
 
     // ─── Excluir ──────────────────────────────────────────
-    public async Task<bool> ExcluirAsync(int id)
+    public async Task<(bool ok, string? erro)> ExcluirAsync(int id)
     {
         var aluno = await _db.Alunos.FindAsync(id);
-        if (aluno is null) return false;
+        if (aluno is null) return (false, "Aluno não encontrado.");
 
         _db.Alunos.Remove(aluno);
-        await _db.SaveChangesAsync();
-        return true;
+        try
+        {
+            await _db.SaveChangesAsync();
+        }
+        catch (DbUpdateException)
+        {
+            return (false, "Não é possível excluir: existem atendimentos, agendamentos ou lançamentos vinculados a este aluno.");
+        }
+        return (true, null);
     }
 
     // ─── Mapeamento ───────────────────────────────────────
@@ -110,6 +119,7 @@ public class AlunoService : IAlunoService
         Idade               = a.Idade,
         NomePai             = a.NomePai,
         NomeMae             = a.NomeMae,
+        Cpf                 = a.Cpf,
         CpfPai              = a.CpfPai,
         CpfMae              = a.CpfMae,
         TelefoneResponsavel = a.TelefoneResponsavel,

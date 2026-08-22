@@ -108,9 +108,11 @@ public class UsuariosController : ControllerBase
     public async Task<IActionResult> Excluir(int id)
     {
         if (!IsAdmin()) return Forbid();
-        var ok = await _service.ExcluirAsync(id);
+        var (ok, erro) = await _service.ExcluirAsync(id);
+        if (!ok && erro == "Usuário não encontrado.")
+            return NotFound(new { mensagem = erro });
         if (!ok)
-            return NotFound(new { mensagem = "Usuário não encontrado." });
+            return Conflict(new { mensagem = erro });
 
         return Ok(new { mensagem = "Usuário excluído com sucesso." });
     }

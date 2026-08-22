@@ -76,12 +76,13 @@ class AgendamentoService {
     }
   }
 
-  // ─── Editar (pagamento / falta) ────────────────────────
+  // ─── Editar (pagamento / falta / data) ─────────────────
   static Future<String?> editar({
     required int id,
     required double valorConsulta,
     required bool estaPago,
     required bool faltou,
+    DateTime? horario,
   }) async {
     final response = await http.put(
       Uri.parse('$_baseUrl/api/agendamentos/$id'),
@@ -90,6 +91,7 @@ class AgendamentoService {
         'valorConsulta': valorConsulta,
         'estaPago':      estaPago,
         'faltou':        faltou,
+        if (horario != null) 'horario': horario.toIso8601String(),
       }),
     );
     if (response.statusCode == 200) return null;
@@ -102,11 +104,19 @@ class AgendamentoService {
   }
 
   // ─── Excluir ────────────────────────────────────────────
-  static Future<bool> excluir(int id) async {
+  // Retorna null em caso de sucesso, ou a mensagem de erro do backend
+  // (ex.: quando existe um atendimento registrado para o agendamento).
+  static Future<String?> excluir(int id) async {
     final response = await http.delete(
       Uri.parse('$_baseUrl/api/agendamentos/$id'),
       headers: await _headers(),
     );
-    return response.statusCode == 200;
+    if (response.statusCode == 200) return null;
+    try {
+      final body = jsonDecode(response.body);
+      return body['mensagem'] ?? 'Erro ao excluir agendamento.';
+    } catch (_) {
+      return 'Erro ao excluir agendamento.';
+    }
   }
 }

@@ -11,8 +11,13 @@ public class Lancamento
     [Required]
     public int IdAluno { get; set; }
 
-    [Required]
-    public int IdAtendimento { get; set; }
+    // Nulo quando o lançamento foi gerado automaticamente a partir de um
+    // agendamento marcado como pago (ver IdAgendamento).
+    public int? IdAtendimento { get; set; }
+
+    // Preenchido quando o lançamento foi gerado automaticamente ao marcar
+    // um agendamento como pago no calendário.
+    public int? IdAgendamento { get; set; }
 
     // Usuário que registrou o lançamento
     [Required]
@@ -42,6 +47,9 @@ public class Lancamento
 
     [ForeignKey("IdAtendimento")]
     public virtual Atendimento? Atendimento { get; set; }
+
+    [ForeignKey("IdAgendamento")]
+    public virtual Agendamento? Agendamento { get; set; }
 
     [ForeignKey("IdUsuario")]
     public virtual Usuario? Usuario { get; set; }

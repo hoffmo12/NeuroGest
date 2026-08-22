@@ -62,11 +62,11 @@ class _ValidatedField extends StatelessWidget {
     required this.label,
     required this.hint,
     required this.controller,
-    this.obscureText = false,
     this.suffixIcon,
     this.inputFormatters,
     this.keyboardType,
     this.errorText,
+    this.obscureText = false,
   });
 
   @override
@@ -123,6 +123,7 @@ class _AlunoFormScreenState extends State<AlunoFormScreen> {
   String? _errNome;
   String? _errData;
   String? _errCpf;
+  String? _errNomeMae;
   String? _errTelefone;
 
   DateTime? _dataSelecionada;
@@ -142,8 +143,8 @@ class _AlunoFormScreenState extends State<AlunoFormScreen> {
       _sexoCtrl.text      = a.sexo ?? '';
       _estadoCtrl.text    = a.estado ?? '';
       _nomePaiCtrl.text   = a.nomePai ?? '';
-      _nomeMaeCtrl.text   = a.nomeMae ?? '';
-      _cpfCtrl.text       = a.cpf ?? '';
+      _nomeMaeCtrl.text   = a.nomeMae;
+      _cpfCtrl.text       = a.cpf;
       _telCtrl.text       = a.telefoneResponsavel ?? '';
       _obsCtrl.text       = a.observacoes ?? '';
       _dataSelecionada    = a.dataNascimento;
@@ -213,7 +214,15 @@ class _AlunoFormScreenState extends State<AlunoFormScreen> {
       _errData = _dataSelecionada == null ? 'Selecione a data de nascimento.' : null;
 
       final cpf = _cpfCtrl.text.replaceAll(RegExp(r'\D'), '');
-      _errCpf = (cpf.isNotEmpty && cpf.length != 11) ? 'CPF inválido. Digite os 11 dígitos.' : null;
+      if (cpf.isEmpty) {
+        _errCpf = 'O CPF do aluno é obrigatório.';
+      } else if (cpf.length != 11) {
+        _errCpf = 'CPF inválido. Digite os 11 dígitos.';
+      } else {
+        _errCpf = null;
+      }
+
+      _errNomeMae = _nomeMaeCtrl.text.trim().isEmpty ? 'O nome da mãe é obrigatório.' : null;
 
       final tel = _telCtrl.text.replaceAll(RegExp(r'\D'), '');
       _errTelefone = (tel.isNotEmpty && (tel.length < 10 || tel.length > 11))
@@ -221,7 +230,11 @@ class _AlunoFormScreenState extends State<AlunoFormScreen> {
           : null;
     });
 
-    return _errNome == null && _errData == null && _errCpf == null && _errTelefone == null;
+    return _errNome == null &&
+        _errData == null &&
+        _errCpf == null &&
+        _errNomeMae == null &&
+        _errTelefone == null;
   }
 
   Future<void> _salvar() async {
@@ -237,8 +250,8 @@ class _AlunoFormScreenState extends State<AlunoFormScreen> {
     final String? sexo = _sexoCtrl.text.trim().isEmpty ? null : _sexoCtrl.text.trim();
     final String? estado = _estadoCtrl.text.trim().isEmpty ? null : _estadoCtrl.text.trim();
     final String? nomePai = _nomePaiCtrl.text.trim().isEmpty ? null : _nomePaiCtrl.text.trim();
-    final String? nomeMae = _nomeMaeCtrl.text.trim().isEmpty ? null : _nomeMaeCtrl.text.trim();
-    final String? cpf = _cpfCtrl.text.trim().isEmpty ? null : _cpfCtrl.text.trim();
+    final String nomeMae = _nomeMaeCtrl.text.trim();
+    final String cpf = _cpfCtrl.text.trim();
     final String? telefoneResponsavel = _telCtrl.text.trim().isEmpty ? null : _telCtrl.text.trim();
     final String? observacoes = _obsCtrl.text.trim().isEmpty ? null : _obsCtrl.text.trim();
 
@@ -374,7 +387,7 @@ class _AlunoFormScreenState extends State<AlunoFormScreen> {
                                       const SizedBox(width: 12),
                                       Expanded(
                                         child: _ValidatedField(
-                                          label: 'CPF do aluno (opcional):',
+                                          label: 'CPF do aluno:',
                                           hint: '000.000.000-00',
                                           controller: _cpfCtrl,
                                           errorText: _errCpf,
@@ -436,9 +449,10 @@ class _AlunoFormScreenState extends State<AlunoFormScreen> {
 
                                   // ── Nome Mãe ──
                                   _ValidatedField(
-                                    label: 'Nome da mãe (opcional):',
+                                    label: 'Nome da mãe:',
                                     hint: 'Nome completo da mãe',
                                     controller: _nomeMaeCtrl,
+                                    errorText: _errNomeMae,
                                   ),
                                   const SizedBox(height: 14),
 

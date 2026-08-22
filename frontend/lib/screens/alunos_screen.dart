@@ -14,6 +14,7 @@ class AlunosScreen extends StatefulWidget {
 class _AlunosScreenState extends State<AlunosScreen> {
   List<Aluno> _alunos = [];
   final _buscaController = TextEditingController();
+  final _scrollController = ScrollController();
   bool _carregando = true;
 
   @override
@@ -25,6 +26,7 @@ class _AlunosScreenState extends State<AlunosScreen> {
   @override
   void dispose() {
     _buscaController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -129,10 +131,12 @@ class _AlunosScreenState extends State<AlunosScreen> {
                                 : _alunos.isEmpty
                                     ? const Center(child: Text('Nenhum aluno encontrado.'))
                                     : Scrollbar(
+                                        controller: _scrollController,
                                         thumbVisibility: true,
                                         child: ListView.separated(
+                                          controller: _scrollController,
                                           itemCount: _alunos.length,
-                                          separatorBuilder: (_, __) => const SizedBox(height: 10),
+                                          separatorBuilder: (_, _) => const SizedBox(height: 10),
                                           itemBuilder: (_, i) {
                                             final aluno = _alunos[i];
                                             return Container(

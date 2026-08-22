@@ -80,6 +80,7 @@ public class CriarUsuarioDto
     [Required(ErrorMessage = "Perfil é obrigatório.")]
     public string Perfil { get; set; } = "profissional";
 
+    [Required(ErrorMessage = "Telefone é obrigatório.")]
     [MaxLength(20)]
     public string? Telefone { get; set; }
 }

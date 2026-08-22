@@ -35,6 +35,25 @@ public class AppDbContext : DbContext
             .HasForeignKey(a => a.IdUsuario)
             .OnDelete(DeleteBehavior.Restrict);
 
+        // Atendimento → Agendamento (o atendimento nasce de um
+        // agendamento prévio). Restrict: não é possível excluir o
+        // agendamento enquanto existir um atendimento registrado para ele
+        // — a ordem de exclusão exigida é Pagamento → Atendimento →
+        // Agendamento.
+        modelBuilder.Entity<Atendimento>()
+            .HasOne(a => a.Agendamento)
+            .WithMany()
+            .HasForeignKey(a => a.IdAgendamento)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // Um agendamento só pode gerar um atendimento (impede registrar o
+        // mesmo horário agendado duas vezes). MySQL trata múltiplos NULLs
+        // como distintos num índice único, então atendimentos antigos sem
+        // agendamento (IdAgendamento nulo) não são afetados.
+        modelBuilder.Entity<Atendimento>()
+            .HasIndex(a => a.IdAgendamento)
+            .IsUnique();
+
         // Lancamento → Aluno
         modelBuilder.Entity<Lancamento>()
             .HasOne(l => l.Aluno)
@@ -48,6 +67,15 @@ public class AppDbContext : DbContext
             .WithMany()
             .HasForeignKey(l => l.IdAtendimento)
             .OnDelete(DeleteBehavior.Restrict);
+
+        // Lancamento → Agendamento (gerado automaticamente ao marcar um
+        // agendamento como pago). Se o agendamento for excluído, o
+        // lançamento auto-gerado é removido junto.
+        modelBuilder.Entity<Lancamento>()
+            .HasOne(l => l.Agendamento)
+            .WithMany()
+            .HasForeignKey(l => l.IdAgendamento)
+            .OnDelete(DeleteBehavior.Cascade);
 
         // Lancamento → Usuario
         modelBuilder.Entity<Lancamento>()

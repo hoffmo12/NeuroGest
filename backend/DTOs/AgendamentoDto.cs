@@ -21,7 +21,7 @@ public class CriarAgendamentoDto
     public bool EstaPago { get; set; } = false;
 }
 
-// ─── Editar agendamento (pagamento / falta) ────────────────
+// ─── Editar agendamento (pagamento / falta / data) ─────────
 public class EditarAgendamentoDto
 {
     [Required]
@@ -31,6 +31,10 @@ public class EditarAgendamentoDto
     public bool EstaPago { get; set; }
 
     public bool Faltou { get; set; }
+
+    // Novo horário do agendamento. Nulo = mantém o horário atual. Só é
+    // aceito se ainda não existir atendimento registrado para o agendamento.
+    public DateTime? Horario { get; set; }
 }
 
 // ─── Resposta ───────────────────────────────────────────────
@@ -39,12 +43,14 @@ public class AgendamentoResponseDto
     public int      Id            { get; set; }
     public int      IdAluno       { get; set; }
     public string   NomeAluno     { get; set; } = string.Empty;
+    public string?  ObservacoesAluno { get; set; }
     public int      IdUsuario     { get; set; }
     public string   NomeUsuario   { get; set; } = string.Empty;
     public DateTime Horario       { get; set; }
     public decimal  ValorConsulta { get; set; }
     public bool     EstaPago      { get; set; }
     public bool     Faltou        { get; set; }
+    public bool     TemAtendimento { get; set; }
 }
 
 // ─── Listagem simplificada de profissionais para o seletor do

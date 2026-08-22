@@ -101,11 +101,19 @@ class AtendimentoService {
   }
 
   // ─── Excluir ──────────────────────────────────────────
-  static Future<bool> excluir(int id) async {
+  // Retorna null em caso de sucesso, ou a mensagem de erro do backend
+  // (ex.: quando existem lançamentos financeiros vinculados).
+  static Future<String?> excluir(int id) async {
     final response = await http.delete(
       Uri.parse('$_baseUrl/$id'),
       headers: await _headers(),
     );
-    return response.statusCode == 200;
+    if (response.statusCode == 200) return null;
+    try {
+      final body = jsonDecode(response.body);
+      return body['mensagem'] ?? 'Erro ao excluir atendimento.';
+    } catch (_) {
+      return 'Erro ao excluir atendimento.';
+    }
   }
 }

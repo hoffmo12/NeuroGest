@@ -72,7 +72,7 @@ class _FinanceiroScreenState extends State<FinanceiroScreen> {
     if (!mounted) return;
     setState(() {
       _valoresPorMes = resultados.map((r) {
-        final resumo = r as ResumoFinanceiro?;
+        final resumo = r;
         return _ValorMensal(
           recebido: resumo?.totalRecebido ?? 0,
           aberto: resumo?.totalEmAberto ?? 0,
@@ -267,7 +267,7 @@ class _FinanceiroScreenState extends State<FinanceiroScreen> {
                               const SizedBox(height: 10),
 
                               DropdownButtonFormField<int>(
-                                value: mesSelecionado,
+                                initialValue: mesSelecionado,
                                 decoration: InputDecoration(
                                   filled: true,
                                   fillColor: const Color(0xfff6f7fb),
@@ -405,10 +405,16 @@ class _FinanceiroScreenState extends State<FinanceiroScreen> {
                                     )
                                   : ListView.separated(
                                       itemCount: _lancamentos.length,
-                                      separatorBuilder: (_, __) =>
+                                      separatorBuilder: (_, _) =>
                                           const Divider(height: 1),
                                       itemBuilder: (context, index) {
                                         final l = _lancamentos[index];
+                                        final origem = l.idAtendimento != null
+                                            ? 'Atendimento #${l.idAtendimento}'
+                                            : 'Agendamento #${l.idAgendamento}';
+                                        final parcela = l.idLancamentoPai != null
+                                            ? ' · Parcela de #${l.idLancamentoPai}'
+                                            : '';
                                         return ListTile(
                                           contentPadding: EdgeInsets.zero,
                                           leading: CircleAvatar(
@@ -429,9 +435,7 @@ class _FinanceiroScreenState extends State<FinanceiroScreen> {
                                             ),
                                           ),
                                           subtitle: Text(
-                                            'Atendimento #${l.idAtendimento}'
-                                            '${l.idLancamentoPai != null ? ' · Parcela de #${l.idLancamentoPai}' : ''}'
-                                            ' · ${_formatarData(l.dataLancamento)}',
+                                            '$origem$parcela · ${_formatarData(l.dataLancamento)}',
                                           ),
                                           trailing: Row(
                                             mainAxisSize: MainAxisSize.min,
@@ -473,9 +477,7 @@ class _FinanceiroScreenState extends State<FinanceiroScreen> {
                                                   size: 20,
                                                 ),
                                                 tooltip: 'Excluir',
-                                                onPressed: l.quitado
-                                                    ? null
-                                                    : () => _confirmarExclusao(l),
+                                                onPressed: () => _confirmarExclusao(l),
                                               ),
                                             ],
                                           ),
@@ -534,7 +536,7 @@ class _FinanceiroScreenState extends State<FinanceiroScreen> {
               children: [
                 // Aluno
                 DropdownButtonFormField<Aluno>(
-                  value: alunoSelecionado,
+                  initialValue: alunoSelecionado,
                   decoration: const InputDecoration(
                     labelText: 'Aluno',
                     border: OutlineInputBorder(),
@@ -558,7 +560,7 @@ class _FinanceiroScreenState extends State<FinanceiroScreen> {
 
                 // Atendimento (carregado ao selecionar aluno)
                 DropdownButtonFormField<int>(
-                  value: atendimentoSelecionadoId,
+                  initialValue: atendimentoSelecionadoId,
                   decoration: const InputDecoration(
                     labelText: 'Atendimento',
                     border: OutlineInputBorder(),
@@ -581,7 +583,7 @@ class _FinanceiroScreenState extends State<FinanceiroScreen> {
 
                 // Usuario responsavel
                 DropdownButtonFormField<Usuario>(
-                  value: usuarioSelecionado,
+                  initialValue: usuarioSelecionado,
                   decoration: const InputDecoration(
                     labelText: 'Usuario responsavel',
                     border: OutlineInputBorder(),
@@ -633,7 +635,7 @@ class _FinanceiroScreenState extends State<FinanceiroScreen> {
                   idAluno:       alunoSelecionado!.id,
                   idAtendimento: atendimentoSelecionadoId!,
                   idUsuario:     usuarioSelecionado!.id,
-                  valorOriginal: valor,
+                  // valorOriginal: valor,
                 );
 
                 if (!mounted) return;
@@ -741,8 +743,14 @@ class _FinanceiroScreenState extends State<FinanceiroScreen> {
         ),
         title: const Text('Excluir lancamento'),
         content: Text(
-          'Deseja excluir o lancamento de ${lancamento.nomeAluno} '
-          '(${_formatarMoeda(lancamento.valorOriginal)})?',
+          lancamento.idAgendamento != null
+              ? 'Deseja excluir o pagamento de ${lancamento.nomeAluno} '
+                '(${_formatarMoeda(lancamento.valorOriginal)})? '
+                'Ele voltará para "em aberto" e só será removido definitivamente '
+                'ao excluir o agendamento correspondente.'
+              : 'Deseja excluir o lancamento de ${lancamento.nomeAluno} '
+                '(${_formatarMoeda(lancamento.valorOriginal)})? '
+                'Esta ação não pode ser desfeita.',
         ),
         actions: [
           TextButton(

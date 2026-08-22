@@ -28,6 +28,18 @@ class AlunoService {
     return [];
   }
 
+  // ─── Buscar por ID ────────────────────────────────────
+  static Future<Aluno?> buscarPorId(int id) async {
+    final response = await http.get(
+      Uri.parse('$_baseUrl/api/alunos/$id'),
+      headers: await _headers(),
+    );
+    if (response.statusCode == 200) {
+      return Aluno.fromJson(jsonDecode(response.body));
+    }
+    return null;
+  }
+
   // ─── Criar ────────────────────────────────────────────
   static Future<String?> criar({
     required String nome,
@@ -36,8 +48,8 @@ class AlunoService {
     String? sexo,
     String? estado,
     String? nomePai,
-    String? nomeMae,
-    String? cpf,
+    required String nomeMae,
+    required String cpf,
     String? telefoneResponsavel,
     String? observacoes,
   }) async {
@@ -76,8 +88,8 @@ class AlunoService {
     String? sexo,
     String? estado,
     String? nomePai,
-    String? nomeMae,
-    String? cpf,
+    required String nomeMae,
+    required String cpf,
     String? telefoneResponsavel,
     String? observacoes,
   }) async {

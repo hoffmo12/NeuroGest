@@ -89,10 +89,23 @@ public class AtendimentosController : ControllerBase
         if (!usuarioExiste)
             return Conflict(new { mensagem = "Usuário não encontrado." });
 
+        // O atendimento só pode ser registrado a partir de um agendamento
+        // prévio, do mesmo aluno, que ainda não tenha sido atendido.
+        var agendamento = await _db.Agendamentos.FindAsync(dto.IdAgendamento);
+        if (agendamento is null)
+            return Conflict(new { mensagem = "Agendamento não encontrado." });
+        if (agendamento.IdAluno != dto.IdAluno)
+            return Conflict(new { mensagem = "O agendamento selecionado não pertence a este aluno." });
+
+        var agendamentoJaAtendido = await _db.Atendimentos.AnyAsync(at => at.IdAgendamento == dto.IdAgendamento);
+        if (agendamentoJaAtendido)
+            return Conflict(new { mensagem = "Este agendamento já possui um atendimento registrado." });
+
         var atendimento = new Atendimento
         {
             IdAluno                 = dto.IdAluno,
             IdUsuario               = dto.IdUsuario,
+            IdAgendamento           = dto.IdAgendamento,
             MotivoDaConsulta        = dto.MotivoDaConsulta.Trim(),
             Anamnese                = dto.Anamnese.Trim(),
             Peso                    = dto.Peso,
@@ -124,7 +137,14 @@ public class AtendimentosController : ControllerBase
             return NotFound(new { mensagem = "Atendimento não encontrado." });
 
         _db.Atendimentos.Remove(atendimento);
-        await _db.SaveChangesAsync();
+        try
+        {
+            await _db.SaveChangesAsync();
+        }
+        catch (DbUpdateException)
+        {
+            return Conflict(new { mensagem = "Não é possível excluir: existem lançamentos vinculados a este atendimento." });
+        }
         return Ok(new { mensagem = "Atendimento excluído com sucesso." });
     }
 
@@ -137,6 +157,7 @@ public class AtendimentosController : ControllerBase
         IdUsuario               = a.IdUsuario,
         NomeUsuario             = a.Usuario?.Nome ?? "",
         CboUsuario              = a.Usuario?.Cbo ?? "",
+        IdAgendamento           = a.IdAgendamento,
         MotivoDaConsulta        = a.MotivoDaConsulta,
         Anamnese                = a.Anamnese,
         Peso                    = a.Peso,

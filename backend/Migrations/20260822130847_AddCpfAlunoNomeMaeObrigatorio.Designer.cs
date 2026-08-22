@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NeuroGest.API.Data;
 
@@ -10,9 +11,11 @@ using NeuroGest.API.Data;
 namespace NeuroGest.API.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260822130847_AddCpfAlunoNomeMaeObrigatorio")]
+    partial class AddCpfAlunoNomeMaeObrigatorio
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -149,9 +152,6 @@ namespace NeuroGest.API.Migrations
                         .IsRequired()
                         .HasColumnType("longtext");
 
-                    b.Property<int?>("IdAgendamento")
-                        .HasColumnType("int");
-
                     b.Property<int>("IdAluno")
                         .HasColumnType("int");
 
@@ -175,9 +175,6 @@ namespace NeuroGest.API.Migrations
                         .HasColumnType("decimal(5,2)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("IdAgendamento")
-                        .IsUnique();
 
                     b.HasIndex("IdAluno");
 
@@ -312,7 +309,7 @@ namespace NeuroGest.API.Migrations
                             Nome = "Administrador",
                             NumRegistro = "",
                             Perfil = "admin",
-                            SenhaHash = "$2a$11$crwUrdfEyXv63iIyHMX4AeNns./kJu/G7LW.e.jdo.zshuF7Kiqcq",
+                            SenhaHash = "$2a$11$Hni9PfQQV8p9/3xx4C1GOual2SXYD2KXyRz0G0cYWB4aGmVIEZ0eK",
                             TipoRegistro = ""
                         });
                 });
@@ -338,11 +335,6 @@ namespace NeuroGest.API.Migrations
 
             modelBuilder.Entity("NeuroGest.API.Models.Atendimento", b =>
                 {
-                    b.HasOne("NeuroGest.API.Models.Agendamento", "Agendamento")
-                        .WithMany()
-                        .HasForeignKey("IdAgendamento")
-                        .OnDelete(DeleteBehavior.Restrict);
-
                     b.HasOne("NeuroGest.API.Models.Aluno", "Aluno")
                         .WithMany()
                         .HasForeignKey("IdAluno")
@@ -354,8 +346,6 @@ namespace NeuroGest.API.Migrations
                         .HasForeignKey("IdUsuario")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
-
-                    b.Navigation("Agendamento");
 
                     b.Navigation("Aluno");
 

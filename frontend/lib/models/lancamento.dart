@@ -2,7 +2,8 @@ class Lancamento {
   final int id;
   final int idAluno;
   final String nomeAluno;
-  final int idAtendimento;
+  final int? idAtendimento;
+  final int? idAgendamento;
   final int idUsuario;
   final String nomeUsuario;
   final int? idLancamentoPai;
@@ -17,7 +18,8 @@ class Lancamento {
     required this.id,
     required this.idAluno,
     this.nomeAluno = '',
-    required this.idAtendimento,
+    this.idAtendimento,
+    this.idAgendamento,
     required this.idUsuario,
     this.nomeUsuario = '',
     this.idLancamentoPai,
@@ -34,7 +36,8 @@ class Lancamento {
       id:               json['id'] as int,
       idAluno:          json['idAluno'] as int,
       nomeAluno:        json['nomeAluno'] as String? ?? '',
-      idAtendimento:    json['idAtendimento'] as int,
+      idAtendimento:    json['idAtendimento'] as int?,
+      idAgendamento:    json['idAgendamento'] as int?,
       idUsuario:        json['idUsuario'] as int,
       nomeUsuario:      json['nomeUsuario'] as String? ?? '',
       idLancamentoPai:  json['idLancamentoPai'] as int?,

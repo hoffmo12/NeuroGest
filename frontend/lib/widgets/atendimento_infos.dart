@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:neurogest_front/models/usuario.dart';
-import 'package:neurogest_front/models/usuario.dart';
 
 class AtendimentoInfos extends StatelessWidget {
   final Usuario usuario;

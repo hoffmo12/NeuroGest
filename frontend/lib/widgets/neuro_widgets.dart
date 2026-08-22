@@ -243,10 +243,7 @@ class NeuroTextField extends StatelessWidget {
 class NeuroHeaderTitle extends StatelessWidget {
   final String title;
 
-  const NeuroHeaderTitle({
-    super.key,
-    required this.title,
-  });
+  const NeuroHeaderTitle({super.key, required this.title});
 
   @override
   Widget build(BuildContext context) {
@@ -263,27 +260,22 @@ class NeuroHeaderTitle extends StatelessWidget {
   }
 }
 
-// AGORA APENAS O NEUROLOGO FOI CONVERTIDO PARA STATEFUL E POSSUI ANIMAÇÃO DINÂMICA
 class NeuroLogo extends StatefulWidget {
   final double size;
   final bool animated;
 
-  const NeuroLogo({
-    super.key, 
-    this.size = 72, 
-    this.animated = false,
-  });
+  const NeuroLogo({super.key, this.size = 72, this.animated = false});
 
   @override
   State<NeuroLogo> createState() => _NeuroLogoState();
 }
 
-class _NeuroLogoState extends State<NeuroLogo> with SingleTickerProviderStateMixin {
+class _NeuroLogoState extends State<NeuroLogo>
+    with SingleTickerProviderStateMixin {
   late final Ticker _ticker;
   final Random _random = Random();
   late double pieceSize;
 
-  /// Posições e velocidades das peças
   late List<Offset> positions;
   late List<Offset> velocities;
 
@@ -292,19 +284,21 @@ class _NeuroLogoState extends State<NeuroLogo> with SingleTickerProviderStateMix
     super.initState();
     pieceSize = widget.size * 0.36;
 
-    // Posições base iniciais (Layout do quebra-cabeça)
     positions = [
-      Offset(widget.size * 0.30, 0),                       // Amarelo
-      Offset(0, widget.size * 0.25),                      // Azul
-      Offset(widget.size * 1.5 - pieceSize, widget.size * 0.25), // Verde (Ajustado para a proporção correta de largura)
+      Offset(widget.size * 0.30, 0), // Amarelo
+      Offset(0, widget.size * 0.25), // Azul
+      Offset(
+        widget.size * 1.5 - pieceSize,
+        widget.size * 0.25,
+      ), // Verde (Ajustado para a proporção correta de largura)
       Offset(widget.size * 0.42, widget.size - pieceSize), // Vermelho
     ];
 
     velocities = List.generate(
       4,
       (_) => Offset(
-        (_random.nextDouble() - 0.5) * 1.2,
-        (_random.nextDouble() - 0.5) * 1.2,
+        (_random.nextDouble() - 0.2) * 0.5,
+        (_random.nextDouble() - 0.2) * 0.5,
       ),
     );
 
@@ -415,12 +409,7 @@ class NeuroTopBar extends StatelessWidget {
   final Widget? left;
   final Widget? right;
 
-  const NeuroTopBar({
-    super.key,
-    required this.title,
-    this.left,
-    this.right,
-  });
+  const NeuroTopBar({super.key, required this.title, this.left, this.right});
 
   @override
   Widget build(BuildContext context) {
@@ -438,8 +427,10 @@ class NeuroTopBar extends StatelessWidget {
               letterSpacing: 0.6,
             ),
           ),
-          if (left != null) Align(alignment: Alignment.centerLeft, child: left!),
-          if (right != null) Align(alignment: Alignment.centerRight, child: right!),
+          if (left != null)
+            Align(alignment: Alignment.centerLeft, child: left!),
+          if (right != null)
+            Align(alignment: Alignment.centerRight, child: right!),
         ],
       ),
     );

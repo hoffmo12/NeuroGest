@@ -15,6 +15,7 @@ class _UsuariosScreenState extends State<UsuariosScreen> {
   List<Usuario> _todos     = [];
   List<Usuario> _filtrados = [];
   final _buscaController   = TextEditingController();
+  final _scrollController  = ScrollController();
   bool _carregando         = true;
 
   @override
@@ -26,6 +27,7 @@ class _UsuariosScreenState extends State<UsuariosScreen> {
   @override
   void dispose() {
     _buscaController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -80,8 +82,11 @@ class _UsuariosScreenState extends State<UsuariosScreen> {
 
     if (confirmar == true) {
       final ok = await UsuarioService.excluir(usuario.id);
-      if (ok) _carregar();
-      else _mostrarErro('Erro ao excluir usuário.');
+      if (ok) {
+        _carregar();
+      } else {
+        _mostrarErro('Erro ao excluir usuário.');
+      }
     }
   }
 
@@ -162,10 +167,12 @@ class _UsuariosScreenState extends State<UsuariosScreen> {
                                         child: Text('Nenhum usuário encontrado.'),
                                       )
                                     : Scrollbar(
+                                        controller: _scrollController,
                                         thumbVisibility: true,
                                         child: ListView.separated(
+                                          controller: _scrollController,
                                           itemCount: _filtrados.length,
-                                          separatorBuilder: (_, __) =>
+                                          separatorBuilder: (_, _) =>
                                               const SizedBox(height: 10),
                                           itemBuilder: (_, i) {
                                             final u = _filtrados[i];

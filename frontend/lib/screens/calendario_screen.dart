@@ -158,7 +158,7 @@ class _CalendarioScreenState extends State<CalendarioScreen> {
                           const SizedBox(width: 16),
                           Switch(
                             value: pago,
-                            activeColor: Colors.green,
+                            activeThumbColor: Colors.green,
                             onChanged: (v) => setDialogState(() => pago = v),
                           ),
                         ],
@@ -215,6 +215,7 @@ class _CalendarioScreenState extends State<CalendarioScreen> {
       builder: (_) {
         bool faltou = evento.faltou;
         bool pago = evento.estaPago;
+        DateTime novoHorario = evento.horario;
 
         return StatefulBuilder(
           builder: (context, setDialogState) => AlertDialog(
@@ -225,23 +226,62 @@ class _CalendarioScreenState extends State<CalendarioScreen> {
               children: [
                 Text('Aluno: ${evento.nomeAluno}'),
                 const SizedBox(height: 4),
-                Text(
-                  'Data: ${evento.horario.day}/${evento.horario.month}/${evento.horario.year} '
-                  'às ${evento.horario.hour.toString().padLeft(2, '0')}:'
-                  '${evento.horario.minute.toString().padLeft(2, '0')}',
-                ),
-                const SizedBox(height: 4),
                 Text('Profissional: ${evento.nomeUsuario}'),
                 const SizedBox(height: 4),
                 Text('Valor: R\$ ${evento.valorConsulta.toStringAsFixed(2)}'),
                 const SizedBox(height: 12),
                 Row(
                   children: [
+                    const Text('Data/horário: '),
+                    Expanded(
+                      child: Text(
+                        '${novoHorario.day.toString().padLeft(2, '0')}/'
+                        '${novoHorario.month.toString().padLeft(2, '0')}/'
+                        '${novoHorario.year} às '
+                        '${novoHorario.hour.toString().padLeft(2, '0')}:'
+                        '${novoHorario.minute.toString().padLeft(2, '0')}',
+                        style: const TextStyle(fontWeight: FontWeight.w600),
+                      ),
+                    ),
+                    if (evento.temAtendimento)
+                      const Tooltip(
+                        message: 'Não é possível alterar: já existe atendimento registrado.',
+                        child: Icon(Icons.lock_outline, size: 16, color: Colors.grey),
+                      )
+                    else
+                      TextButton(
+                        onPressed: () async {
+                          final novaData = await showDatePicker(
+                            context: context,
+                            initialDate: novoHorario,
+                            firstDate: DateTime(2020),
+                            lastDate: DateTime(2100),
+                          );
+                          if (novaData == null || !context.mounted) return;
+                          final novaHora = await showTimePicker(
+                            context: context,
+                            initialTime: TimeOfDay.fromDateTime(novoHorario),
+                          );
+                          if (novaHora == null) return;
+                          setDialogState(() {
+                            novoHorario = DateTime(
+                              novaData.year, novaData.month, novaData.day,
+                              novaHora.hour, novaHora.minute,
+                            );
+                          });
+                        },
+                        child: const Text('Alterar'),
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
                     const Text('Pago?'),
                     const SizedBox(width: 8),
                     Switch(
                       value: pago,
-                      activeColor: Colors.green,
+                      activeThumbColor: Colors.green,
                       onChanged: (v) => setDialogState(() => pago = v),
                     ),
                   ],
@@ -252,7 +292,7 @@ class _CalendarioScreenState extends State<CalendarioScreen> {
                     const SizedBox(width: 8),
                     Switch(
                       value: faltou,
-                      activeColor: Colors.redAccent,
+                      activeThumbColor: Colors.redAccent,
                       onChanged: (v) => setDialogState(() => faltou = v),
                     ),
                   ],
@@ -262,10 +302,16 @@ class _CalendarioScreenState extends State<CalendarioScreen> {
             actions: [
               TextButton(
                 onPressed: () async {
-                  final ok = await AgendamentoService.excluir(evento.id);
+                  final erro = await AgendamentoService.excluir(evento.id);
                   if (!context.mounted) return;
                   Navigator.pop(context);
-                  if (ok) _carregarAgendamentos();
+                  if (erro == null) {
+                    _carregarAgendamentos();
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text(erro)),
+                    );
+                  }
                 },
                 child: const Text(
                   'Excluir',
@@ -283,6 +329,7 @@ class _CalendarioScreenState extends State<CalendarioScreen> {
                     valorConsulta: evento.valorConsulta,
                     estaPago: pago,
                     faltou: faltou,
+                    horario: novoHorario,
                   );
                   if (!context.mounted) return;
                   Navigator.pop(context);
@@ -391,6 +438,20 @@ class _CalendarioScreenState extends State<CalendarioScreen> {
                             icon: const Icon(Icons.chevron_right),
                           ),
                         ],
+                      ),
+                      const SizedBox(height: 6),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 4),
+                        child: Wrap(
+                          alignment: WrapAlignment.center,
+                          spacing: 16,
+                          runSpacing: 4,
+                          children: const [
+                            _LegendaCor(cor: Colors.amber, texto: 'Pendente'),
+                            _LegendaCor(cor: Colors.green, texto: 'Pago'),
+                            _LegendaCor(cor: Colors.redAccent, texto: 'Faltou'),
+                          ],
+                        ),
                       ),
                       const SizedBox(height: 6),
                       Container(
@@ -515,6 +576,28 @@ class _CalendarioScreenState extends State<CalendarioScreen> {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _LegendaCor extends StatelessWidget {
+  final Color cor;
+  final String texto;
+  const _LegendaCor({required this.cor, required this.texto});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 10,
+          height: 10,
+          decoration: BoxDecoration(color: cor, shape: BoxShape.circle),
+        ),
+        const SizedBox(width: 4),
+        Text(texto, style: const TextStyle(fontSize: 11)),
+      ],
     );
   }
 }

@@ -62,9 +62,9 @@ class _ValidatedField extends StatelessWidget {
     required this.label,
     required this.hint,
     required this.controller,
+    this.inputFormatters,
     this.obscureText = false,
     this.suffixIcon,
-    this.inputFormatters,
     this.keyboardType,
     this.errorText,
   });
@@ -100,6 +100,60 @@ class _ValidatedField extends StatelessWidget {
   }
 }
 
+class _OpcaoRadio extends StatelessWidget {
+  final String label;
+  final bool selecionado;
+  final VoidCallback onTap;
+
+  const _OpcaoRadio({
+    required this.label,
+    required this.selecionado,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          decoration: BoxDecoration(
+            color: selecionado
+                ? NeuroColors.primary.withOpacity(0.08)
+                : NeuroColors.background,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: selecionado ? NeuroColors.primary : NeuroColors.border,
+              width: selecionado ? 2 : 1,
+            ),
+          ),
+          child: Row(
+            children: [
+              Icon(
+                selecionado ? Icons.radio_button_checked : Icons.radio_button_off,
+                size: 18,
+                color: selecionado ? NeuroColors.primary : NeuroColors.mutedText,
+              ),
+              const SizedBox(width: 10),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: selecionado ? NeuroColors.primary : NeuroColors.text,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class UsuarioFormScreen extends StatefulWidget {
   final Usuario? usuario;
   const UsuarioFormScreen({super.key, this.usuario});
@@ -113,20 +167,30 @@ class _UsuarioFormScreenState extends State<UsuarioFormScreen> {
   final _emailCtrl       = TextEditingController();
   final _senhaCtrl       = TextEditingController();
   final _cpfCtrl         = TextEditingController();
-  final _cboCtrl         = TextEditingController();
   final _tipoRegistroCtrl = TextEditingController();
   final _numRegistroCtrl  = TextEditingController();
   final _telCtrl         = TextEditingController();
 
   String _perfilSelecionado = 'profissional';
+  String? _cboSelecionado;
   bool _obscureSenha = true;
   bool _carregando = false;
 
   String? _errNome;
   String? _errEmail;
   String? _errSenha;
+  String? _errTelefone;
+  String? _errCbo;
 
   final List<String> _perfis = ['admin', 'profissional', 'recepcao'];
+  final List<String> _cbos = [
+    'Fonoaudiólogo(a)',
+    'Psicólogo(a)',
+    'Psicopedagogo(a)',
+    'Fisioterapeuta',
+    'Terapeuta Ocupacional',
+    'Nutricionista',
+  ];
   final Map<String, String> _labelPerfil = {
     'admin':        'Administrador',
     'profissional': 'Profissional/Terapeuta',
@@ -143,11 +207,14 @@ class _UsuarioFormScreenState extends State<UsuarioFormScreen> {
       _nomeCtrl.text         = u.nome;
       _emailCtrl.text        = u.email;
       _cpfCtrl.text          = u.cpf ?? '';
-      _cboCtrl.text          = u.cbo;
       _tipoRegistroCtrl.text = u.tipoRegistro;
       _numRegistroCtrl.text  = u.numRegistro;
       _telCtrl.text          = u.telefone ?? '';
       _perfilSelecionado     = _perfis.contains(u.perfil) ? u.perfil : 'profissional';
+      if (u.cbo.isNotEmpty) {
+        if (!_cbos.contains(u.cbo)) _cbos.add(u.cbo);
+        _cboSelecionado = u.cbo;
+      }
     }
   }
 
@@ -157,7 +224,6 @@ class _UsuarioFormScreenState extends State<UsuarioFormScreen> {
     _emailCtrl.dispose();
     _senhaCtrl.dispose();
     _cpfCtrl.dispose();
-    _cboCtrl.dispose();
     _tipoRegistroCtrl.dispose();
     _numRegistroCtrl.dispose();
     _telCtrl.dispose();
@@ -175,8 +241,16 @@ class _UsuarioFormScreenState extends State<UsuarioFormScreen> {
       } else {
         _errSenha = null;
       }
+      _errTelefone = !_isEdicao && _telCtrl.text.trim().isEmpty
+          ? 'Telefone é obrigatório.'
+          : null;
+      _errCbo = _cboSelecionado == null ? 'Selecione a especialidade.' : null;
     });
-    return _errNome == null && _errEmail == null && _errSenha == null;
+    return _errNome == null &&
+        _errEmail == null &&
+        _errSenha == null &&
+        _errTelefone == null &&
+        _errCbo == null;
   }
 
   Future<void> _salvar() async {
@@ -191,7 +265,7 @@ class _UsuarioFormScreenState extends State<UsuarioFormScreen> {
         nome:         _nomeCtrl.text.trim(),
         email:        _emailCtrl.text.trim(),
         cpf:          _cpfCtrl.text.trim().isEmpty ? null : _cpfCtrl.text.trim(),
-        cbo:          _cboCtrl.text.trim(),
+        cbo:          _cboSelecionado ?? '',
         tipoRegistro: _tipoRegistroCtrl.text.trim(),
         numRegistro:  _numRegistroCtrl.text.trim(),
         perfil:       _perfilSelecionado,
@@ -204,7 +278,7 @@ class _UsuarioFormScreenState extends State<UsuarioFormScreen> {
         email:        _emailCtrl.text.trim(),
         senha:        _senhaCtrl.text,
         cpf:          _cpfCtrl.text.trim().isEmpty ? null : _cpfCtrl.text.trim(),
-        cbo:          _cboCtrl.text.trim(),
+        cbo:          _cboSelecionado ?? '',
         tipoRegistro: _tipoRegistroCtrl.text.trim(),
         numRegistro:  _numRegistroCtrl.text.trim(),
         perfil:       _perfilSelecionado,
@@ -316,12 +390,33 @@ class _UsuarioFormScreenState extends State<UsuarioFormScreen> {
                                     inputFormatters: [_CpfMask()],
                                   ),
                                   const SizedBox(height: 12),
-                                  NeuroTextField(
-                                    label: 'CBO (Cargo/Especialidade)',
-                                    hint: 'Ex: Psicopedagogo, Fisioterapeuta',
-                                    controller: _cboCtrl,
+                                  const Text(
+                                    'Especialidade (CBO) *',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w700,
+                                      color: NeuroColors.text,
+                                    ),
                                   ),
-                                  const SizedBox(height: 12),
+                                  const SizedBox(height: 8),
+                                  ..._cbos.map((c) => _OpcaoRadio(
+                                        label: c,
+                                        selecionado: _cboSelecionado == c,
+                                        onTap: () => setState(() => _cboSelecionado = c),
+                                      )),
+                                  if (_errCbo != null)
+                                    Padding(
+                                      padding: const EdgeInsets.only(bottom: 8, left: 4),
+                                      child: Text(
+                                        _errCbo!,
+                                        style: const TextStyle(
+                                          color: Colors.red,
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                  const SizedBox(height: 4),
                                   Row(
                                     children: [
                                       Expanded(
@@ -342,12 +437,15 @@ class _UsuarioFormScreenState extends State<UsuarioFormScreen> {
                                     ],
                                   ),
                                   const SizedBox(height: 12),
-                                  NeuroTextField(
-                                    label: 'Telefone de Contato',
+                                  _ValidatedField(
+                                    label: _isEdicao
+                                        ? 'Telefone de Contato'
+                                        : 'Telefone de Contato *',
                                     hint: '(00) 00000-0000',
                                     controller: _telCtrl,
                                     keyboardType: TextInputType.phone,
                                     inputFormatters: [_TelefoneMask()],
+                                    errorText: _errTelefone,
                                   ),
                                   const SizedBox(height: 20),
 
@@ -361,53 +459,11 @@ class _UsuarioFormScreenState extends State<UsuarioFormScreen> {
                                     ),
                                   ),
                                   const SizedBox(height: 8),
-                                  ..._perfis.map((p) => Padding(
-                                    padding: const EdgeInsets.only(bottom: 8),
-                                    child: InkWell(
-                                      onTap: () => setState(() => _perfilSelecionado = p),
-                                      borderRadius: BorderRadius.circular(16),
-                                      child: Container(
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 14, vertical: 10),
-                                        decoration: BoxDecoration(
-                                          color: _perfilSelecionado == p
-                                              ? NeuroColors.primary.withOpacity(0.08)
-                                              : NeuroColors.background,
-                                          borderRadius: BorderRadius.circular(16),
-                                          border: Border.all(
-                                            color: _perfilSelecionado == p
-                                                ? NeuroColors.primary
-                                                : NeuroColors.border,
-                                            width: _perfilSelecionado == p ? 2 : 1,
-                                          ),
-                                        ),
-                                        child: Row(
-                                          children: [
-                                            Icon(
-                                              _perfilSelecionado == p
-                                                  ? Icons.radio_button_checked
-                                                  : Icons.radio_button_off,
-                                              size: 18,
-                                              color: _perfilSelecionado == p
-                                                  ? NeuroColors.primary
-                                                  : NeuroColors.mutedText,
-                                            ),
-                                            const SizedBox(width: 10),
-                                            Text(
-                                              _labelPerfil[p] ?? p,
-                                              style: TextStyle(
-                                                fontSize: 13,
-                                                fontWeight: FontWeight.w600,
-                                                color: _perfilSelecionado == p
-                                                    ? NeuroColors.primary
-                                                    : NeuroColors.text,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  )),
+                                  ..._perfis.map((p) => _OpcaoRadio(
+                                        label: _labelPerfil[p] ?? p,
+                                        selecionado: _perfilSelecionado == p,
+                                        onTap: () => setState(() => _perfilSelecionado = p),
+                                      )),
                                   const SizedBox(height: 24),
 
                                   // ── Botão salvar ──

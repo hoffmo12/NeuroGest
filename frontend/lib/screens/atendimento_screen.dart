@@ -3,6 +3,7 @@ import '../models/atendimento.dart';
 import '../models/usuario.dart';
 import '../services/atendimento_service.dart';
 import '../widgets/neuro_widgets.dart';
+import 'ficha_atendimento_screen.dart';
 import 'novo_atendimento_screen.dart';
 
 class AtendimentoScreen extends StatefulWidget {
@@ -16,6 +17,7 @@ class AtendimentoScreen extends StatefulWidget {
 class _AtendimentoScreenState extends State<AtendimentoScreen> {
   List<Atendimento> _atendimentos = [];
   final _buscaController = TextEditingController();
+  final _scrollController = ScrollController();
   bool _carregando = false;
 
   @override
@@ -27,6 +29,7 @@ class _AtendimentoScreenState extends State<AtendimentoScreen> {
   @override
   void dispose() {
     _buscaController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -79,13 +82,13 @@ class _AtendimentoScreenState extends State<AtendimentoScreen> {
     );
 
     if (confirmar == true) {
-      final ok = await AtendimentoService.excluir(atendimento.id);
-      if (ok) {
+      final erro = await AtendimentoService.excluir(atendimento.id);
+      if (erro == null) {
         _buscar(busca: _buscaController.text);
       } else {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Erro ao excluir atendimento.')),
+            SnackBar(content: Text(erro)),
           );
         }
       }
@@ -177,10 +180,12 @@ class _AtendimentoScreenState extends State<AtendimentoScreen> {
                                             'Nenhum atendimento encontrado.'),
                                       )
                                     : Scrollbar(
+                                        controller: _scrollController,
                                         thumbVisibility: true,
                                         child: ListView.separated(
+                                          controller: _scrollController,
                                           itemCount: _atendimentos.length,
-                                          separatorBuilder: (_, __) =>
+                                          separatorBuilder: (_, _) =>
                                               const SizedBox(height: 10),
                                           itemBuilder: (_, i) {
                                             final a = _atendimentos[i];
@@ -251,7 +256,17 @@ class _AtendimentoScreenState extends State<AtendimentoScreen> {
                                                   const SizedBox(width: 12),
                                                   // Visualizar
                                                   InkWell(
-                                                    onTap: () {},
+                                                    onTap: () {
+                                                      Navigator.push(
+                                                        context,
+                                                        MaterialPageRoute(
+                                                          builder: (_) =>
+                                                              FichaAtendimentoScreen(
+                                                            atendimento: a,
+                                                          ),
+                                                        ),
+                                                      );
+                                                    },
                                                     borderRadius:
                                                         BorderRadius.circular(
                                                             999),

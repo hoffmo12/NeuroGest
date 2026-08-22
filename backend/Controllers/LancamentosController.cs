@@ -52,11 +52,18 @@ public class LancamentosController : ControllerBase
             .Where(l => l.DataLancamento.Month == mes && l.DataLancamento.Year == ano)
             .ToListAsync();
 
+        var totalRecebido = lancamentos.Sum(l => l.ValorPago);
+        var totalEmAberto = lancamentos.Where(l => !l.Quitado).Sum(l => l.ValorRestante);
+
         var resumo = new ResumoFinanceiroDto
         {
-            TotalRecebido  = lancamentos.Sum(l => l.ValorPago),
-            TotalEmAberto  = lancamentos.Where(l => !l.Quitado).Sum(l => l.ValorRestante),
-            TotalPrevisto  = lancamentos.Sum(l => l.ValorOriginal),
+            TotalRecebido  = totalRecebido,
+            TotalEmAberto  = totalEmAberto,
+            // Soma recebido + aberto em vez de ValorOriginal: lançamentos
+            // filhos (pagamento parcial) repetem parte do valor original do
+            // pai, então somar ValorOriginal de todos contaria o mesmo
+            // débito mais de uma vez.
+            TotalPrevisto  = totalRecebido + totalEmAberto,
             QtdPagos       = lancamentos.Count(l => l.Quitado),
             QtdEmAberto    = lancamentos.Count(l => !l.Quitado),
         };
@@ -167,6 +174,11 @@ public class LancamentosController : ControllerBase
         }
 
         // Pagamento parcial → cria novo lançamento com o saldo restante
+        // e encerra este, pois o saldo em aberto passa a ser controlado
+        // pelo novo lançamento (evita contar o mesmo débito duas vezes).
+        var saldoRestante = lancamento.ValorRestante;
+        lancamento.Quitado       = true;
+        lancamento.ValorRestante = 0;
         lancamento.DataPagamento = DateTime.UtcNow;
 
         var novoLancamento = new Lancamento
@@ -175,8 +187,8 @@ public class LancamentosController : ControllerBase
             IdAtendimento    = lancamento.IdAtendimento,
             IdUsuario        = lancamento.IdUsuario,
             IdLancamentoPai  = lancamento.Id,
-            ValorOriginal    = lancamento.ValorRestante,
-            ValorRestante    = lancamento.ValorRestante,
+            ValorOriginal    = saldoRestante,
+            ValorRestante    = saldoRestante,
             ValorPago        = 0,
             Quitado          = false,
         };
@@ -195,18 +207,45 @@ public class LancamentosController : ControllerBase
     }
 
     // DELETE /api/lancamentos/{id}
+    // Ordem de importância: Pagamento → Atendimento → Agendamento. Um
+    // lançamento gerado a partir de um agendamento (IdAgendamento
+    // preenchido) nunca é removido do banco por aqui — "excluir" apenas
+    // volta o pagamento para "em aberto" (a ver); a remoção definitiva só
+    // acontece quando o agendamento correspondente é excluído (cascata).
+    // Lançamentos manuais (sem agendamento vinculado) são excluídos de
+    // verdade, como antes.
     [HttpDelete("{id}")]
     public async Task<IActionResult> Excluir(int id)
     {
-        var lancamento = await _db.Lancamentos.FindAsync(id);
+        var lancamento = await _db.Lancamentos
+            .Include(l => l.Agendamento)
+            .FirstOrDefaultAsync(l => l.Id == id);
         if (lancamento is null)
             return NotFound(new { mensagem = "Lançamento não encontrado." });
 
-        if (lancamento.Quitado)
-            return Conflict(new { mensagem = "Não é possível excluir um lançamento quitado." });
+        if (lancamento.IdAgendamento is not null)
+        {
+            lancamento.Quitado       = false;
+            lancamento.ValorPago     = 0;
+            lancamento.ValorRestante = lancamento.ValorOriginal;
+            lancamento.DataPagamento = null;
+
+            if (lancamento.Agendamento is not null)
+                lancamento.Agendamento.EstaPago = false;
+
+            await _db.SaveChangesAsync();
+            return Ok(new { mensagem = "Pagamento revertido para \"em aberto\". Ele será removido definitivamente ao excluir o agendamento." });
+        }
 
         _db.Lancamentos.Remove(lancamento);
-        await _db.SaveChangesAsync();
+        try
+        {
+            await _db.SaveChangesAsync();
+        }
+        catch (DbUpdateException)
+        {
+            return Conflict(new { mensagem = "Não é possível excluir: existe um lançamento de parcela vinculado a este." });
+        }
         return Ok(new { mensagem = "Lançamento excluído com sucesso." });
     }
 
@@ -217,6 +256,7 @@ public class LancamentosController : ControllerBase
         IdAluno         = l.IdAluno,
         NomeAluno       = l.Aluno?.Nome ?? "",
         IdAtendimento   = l.IdAtendimento,
+        IdAgendamento   = l.IdAgendamento,
         IdUsuario       = l.IdUsuario,
         NomeUsuario     = l.Usuario?.Nome ?? "",
         IdLancamentoPai = l.IdLancamentoPai,

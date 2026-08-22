@@ -9,5 +9,5 @@ public interface IUsuarioService
     Task<(UsuarioResponseDto? resultado, string? erro)> CriarAsync(CriarUsuarioDto dto);
     Task<(UsuarioResponseDto? resultado, string? erro)> EditarAsync(int id, EditarUsuarioDto dto);
     Task<bool> AlternarAtivoAsync(int id);
-    Task<bool> ExcluirAsync(int id);
+    Task<(bool ok, string? erro)> ExcluirAsync(int id);
 }

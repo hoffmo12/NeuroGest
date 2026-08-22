@@ -75,8 +75,11 @@ public class AlunosController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<IActionResult> Excluir(int id)
     {
-        var ok = await _service.ExcluirAsync(id);
-        if (!ok) return NotFound(new { mensagem = "Aluno não encontrado." });
+        var (ok, erro) = await _service.ExcluirAsync(id);
+        if (!ok && erro == "Aluno não encontrado.")
+            return NotFound(new { mensagem = erro });
+        if (!ok)
+            return Conflict(new { mensagem = erro });
         return Ok(new { mensagem = "Aluno excluído com sucesso." });
     }
 }

@@ -7,8 +7,8 @@ class Aluno {
   final String? sexo;
   final String? estado;
   final String? nomePai;
-  final String? nomeMae;
-  final String? cpf;
+  final String nomeMae;
+  final String cpf;
   final String? telefoneResponsavel;
   final String? observacoes;
   final bool ativo;
@@ -22,8 +22,8 @@ class Aluno {
     this.sexo,
     this.estado,
     this.nomePai,
-    this.nomeMae,
-    this.cpf,
+    required this.nomeMae,
+    required this.cpf,
     this.telefoneResponsavel,
     this.observacoes,
     required this.ativo,

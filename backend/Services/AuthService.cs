@@ -31,13 +31,13 @@ public class AuthService : IAuthService
 
         var usuario = new Usuario
         {
-            Nome         = dto.Nome.Trim(),
-            Email        = dto.Email.Trim().ToLower(),
-            SenhaHash    = BCrypt.Net.BCrypt.HashPassword(dto.Senha),
-            Perfil       = perfil,
-            Cbo          = string.Empty,
+            Nome = dto.Nome.Trim(),
+            Email = dto.Email.Trim().ToLower(),
+            SenhaHash = BCrypt.Net.BCrypt.HashPassword(dto.Senha),
+            Perfil = perfil,
+            Cbo = string.Empty,
             TipoRegistro = string.Empty,
-            NumRegistro  = string.Empty,
+            NumRegistro = string.Empty,
         };
 
         _db.Usuarios.Add(usuario);
@@ -65,15 +65,15 @@ public class AuthService : IAuthService
         var (token, expiraEm) = _jwt.GerarToken(usuario);
         return new AuthResponseDto
         {
-            Id           = usuario.Id,
-            Token        = token,
-            Nome         = usuario.Nome,
-            Email        = usuario.Email,
-            Perfil       = usuario.Perfil,
-            Cbo          = usuario.Cbo,
+            Id = usuario.Id,
+            Token = token,
+            Nome = usuario.Nome,
+            Email = usuario.Email,
+            Perfil = usuario.Perfil,
+            Cbo = usuario.Cbo,
             TipoRegistro = usuario.TipoRegistro,
-            NumRegistro  = usuario.NumRegistro,
-            ExpiraEm     = expiraEm,
+            NumRegistro = usuario.NumRegistro,
+            ExpiraEm = expiraEm,
         };
     }
 }

@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "0tbGT/sYsaI=",
+  "dgSpecHash": "01iqyWlHlrQ=",
   "success": true,
-  "projectFilePath": "E:\\NeuroGest\\backend\\NeuroGest.API.csproj",
+  "projectFilePath": "E:\\1neurogest\\NeuroGest\\backend\\NeuroGest.API.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\guilh\\.nuget\\packages\\bcrypt.net-next\\4.0.3\\bcrypt.net-next.4.0.3.nupkg.sha512",
     "C:\\Users\\guilh\\.nuget\\packages\\humanizer.core\\2.14.1\\humanizer.core.2.14.1.nupkg.sha512",

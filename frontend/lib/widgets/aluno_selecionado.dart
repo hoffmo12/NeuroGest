@@ -60,7 +60,7 @@ class AlunoSelecionado extends StatelessWidget {
                     _infoItem(
                       Icons.favorite,
                       'NOME DA MÃE',
-                      aluno.nomeMae ?? 'Não informado',
+                      aluno.nomeMae,
                     ),
                   ],
                 ),
@@ -75,7 +75,7 @@ class AlunoSelecionado extends StatelessWidget {
                     _infoItem(
                       Icons.badge,
                       'CPF / CNS',
-                      aluno.cpf ?? 'Não informado',
+                      aluno.cpf,
                     ),
                     const SizedBox(height: 20),
                     _infoItem(

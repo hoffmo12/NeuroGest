@@ -92,13 +92,21 @@ public class UsuarioService : IUsuarioService
         return true;
     }
 
-    public async Task<bool> ExcluirAsync(int id)
+    public async Task<(bool ok, string? erro)> ExcluirAsync(int id)
     {
         var usuario = await _db.Usuarios.FindAsync(id);
-        if (usuario is null) return false;
+        if (usuario is null) return (false, "Usuário não encontrado.");
+
         _db.Usuarios.Remove(usuario);
-        await _db.SaveChangesAsync();
-        return true;
+        try
+        {
+            await _db.SaveChangesAsync();
+        }
+        catch (DbUpdateException)
+        {
+            return (false, "Não é possível excluir: existem atendimentos, agendamentos ou lançamentos vinculados a este usuário.");
+        }
+        return (true, null);
     }
 
     private static UsuarioResponseDto ToDto(Usuario u) => new()

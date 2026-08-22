@@ -15,8 +15,13 @@ public class AlunoDto
     [MaxLength(150)]
     public string? NomePai { get; set; }
 
+    [Required(ErrorMessage = "Nome da mãe é obrigatório.")]
     [MaxLength(150)]
-    public string? NomeMae { get; set; }
+    public string NomeMae { get; set; } = string.Empty;
+
+    [Required(ErrorMessage = "CPF do aluno é obrigatório.")]
+    [MaxLength(14)]
+    public string Cpf { get; set; } = string.Empty;
 
     [MaxLength(14)]
     public string? CpfPai { get; set; }
@@ -39,7 +44,8 @@ public class AlunoResponseDto
     public DateOnly DataNascimento      { get; set; }
     public int      Idade               { get; set; }
     public string?  NomePai             { get; set; }
-    public string?  NomeMae             { get; set; }
+    public string   NomeMae             { get; set; } = string.Empty;
+    public string   Cpf                 { get; set; } = string.Empty;
     public string?  CpfPai              { get; set; }
     public string?  CpfMae              { get; set; }
     public string?  TelefoneResponsavel { get; set; }

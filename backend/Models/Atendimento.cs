@@ -15,6 +15,13 @@ namespace NeuroGest.API.Models
         [Required]
         public int IdUsuario { get; set; }
 
+        // Agendamento que originou este atendimento. Nulo apenas em
+        // atendimentos antigos, anteriores a esta exigência — novos
+        // atendimentos sempre exigem um agendamento prévio (validado no
+        // controller, já que registros existentes impedem tornar a coluna
+        // obrigatória no banco).
+        public int? IdAgendamento { get; set; }
+
         [Required]
         public string MotivoDaConsulta { get; set; } = string.Empty;
 
@@ -54,5 +61,8 @@ namespace NeuroGest.API.Models
 
         [ForeignKey("IdUsuario")]
         public virtual Usuario? Usuario { get; set; }
+
+        [ForeignKey("IdAgendamento")]
+        public virtual Agendamento? Agendamento { get; set; }
     }
 }
