@@ -1,0 +1,35 @@
+; Script do Inno Setup para Aplicativo Flutter
+
+[Setup]
+AppId={{A6F14B5C-7D6E-4F3A-9B2C-1A2B3C4D5E6F}
+AppName=NeuroGest
+AppVersion=1.0.0
+DefaultDirName={autopf}\NeuroGest
+DefaultGroupName=NeuroGest
+; Remove a tela de selecionar a pasta de destino (opcional)
+DisableDirPage=yes
+; Pasta onde o instalador final (.exe) será salvo
+OutputDir=.\build
+OutputBaseFilename=Instalador_NeuroGest
+Compression=lzma2
+SolidCompression=yes
+WizardStyle=modern
+
+[Languages]
+Name: "brazilianportuguese"; MessagesFile: "compiler:Languages\BrazilianPortuguese.isl"
+
+[Tasks]
+Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
+
+[Files]
+; IMPORTANTE: Altere o caminho abaixo para a pasta absoluta ou relativa do seu build Release do Flutter
+Source: "C:\Users\breit\Documents\NeuroGest\NeuroGest\frontend\build\windows\x64\runner\Release\NeuroGest.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Users\breit\Documents\NeuroGest\NeuroGest\frontend\build\windows\x64\runner\Release\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+; Nota: O '*' garante que todas as DLLs e pastas de plugins (como a data) sejam incluídas.
+
+[Icons]
+Name: "{group}\NeuroGest"; Filename: "{app}\NeuroGest.exe"
+Name: "{autodesktop}\NeuroGest"; Filename: "{app}\NeuroGest.exe"; Tasks: desktopicon
+
+[Run]
+Filename: "{app}\NeuroGest.exe"; Description: "{cm:LaunchProgram,NeuroGest}"; Flags: nowait postinstall skipifsilent

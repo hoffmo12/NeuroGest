@@ -1,0 +1,6 @@
+@NeuroGest.API_HostAddress = http://localhost:5279
+
+GET {{NeuroGest.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
